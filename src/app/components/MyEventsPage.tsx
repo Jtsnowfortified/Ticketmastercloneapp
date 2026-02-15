@@ -9,19 +9,19 @@ export default function MyEventsPage() {
   const upcomingEvents = [
     {
       id: 1,
-      date: 'FRI - JUL 24, 2026 - 8:00 PM',
-      title: 'ARIANA GRANDE - THE ETERNAL SUNSHINE TOUR',
-      venue: 'TD Garden, Boston, MA',
+      date: 'SAT - NOV 8, 2025 - 7:00 PM',
+      title: 'JUNIOR H - $AD BOYZ LIVE & BROKEN TOUR',
+      venue: 'Hollywood Bowl, Hollywood, CA',
       image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      tickets: 2,
+      tickets: 4,
     },
     {
       id: 2,
-      date: 'SAT - OCT 31, 2026 - 8:00 PM',
-      title: 'HARRY STYLES: TOGETHER, TOGETHER. HARRYWEEN.',
-      venue: 'Madison Square Garden, New York, NY',
-      image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweYlMjwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      tickets: 2,
+      date: 'WED - SEP 24, 2025 - 7:00 PM',
+      title: 'CHRIS BROWN: BREEZY BOWL XX',
+      venue: 'Coors Field, Denver, CO',
+      image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      tickets: 3,
     },
   ];
 
