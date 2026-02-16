@@ -31,7 +31,7 @@ export default function Root() {
   }
 
   // Hide bottom nav on ticket detail pages (full-screen modal views)
-  const isTicketModal = location.pathname.startsWith('/my-tickets');
+  const isTicketModal = location.pathname.startsWith('/my-tickets') || location.pathname.startsWith('/transfer');
   const activePage = getActivePage(location.pathname);
 
   return (

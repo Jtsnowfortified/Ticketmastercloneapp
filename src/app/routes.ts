@@ -3,6 +3,7 @@ import Root from "./Root";
 import DiscoverPage from "./components/DiscoverPage";
 import MyEventsPage from "./components/MyEventsPage";
 import MyTicketsPage from "./components/MyTicketsPage";
+import TransferPage from "./components/TransferPage";
 
 export const router = createMemoryRouter([
   {
@@ -12,6 +13,7 @@ export const router = createMemoryRouter([
       { index: true, Component: DiscoverPage },
       { path: "my-events", Component: MyEventsPage },
       { path: "my-tickets/:eventId", Component: MyTicketsPage },
+      { path: "transfer/:eventId", Component: TransferPage },
     ],
   },
 ]);
