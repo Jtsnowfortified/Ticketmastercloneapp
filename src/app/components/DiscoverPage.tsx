@@ -1,82 +1,240 @@
-import { Search, MapPin, Calendar, Heart, Ticket, Camera, User } from 'lucide-react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Search, MapPin, Calendar, ChevronRight } from 'lucide-react';
+import { useState, useRef } from 'react';
+
+// Real Ticketmaster discover page data - current events & tours
+const trendingSearches = [
+  'Noah Kahan', 'Cardi B', 'Post Malone', 'Jelly Roll',
+  'Tame Impala', 'J. Cole', 'Baby Keem', 'Don Toliver',
+];
+
+const featuredBanner = {
+  title: 'Post Malone',
+  subtitle: 'BIG ASS Stadium Tour',
+  label: 'ON SALE NOW',
+  image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
+  cta: 'Get Tickets',
+};
+
+const popularConcerts = [
+  {
+    id: 1,
+    title: 'TWICE [THIS IS FOR] WORLD TOUR',
+    venue: 'Kia Forum',
+    date: 'Wed, Jan 21 - 8:00 PM',
+    image: 'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&q=80',
+  },
+  {
+    id: 2,
+    title: 'Noah Kahan: The Great Divide Tour',
+    venue: 'Hollywood Bowl',
+    date: 'Sat, Jun 13 - 7:30 PM',
+    image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=80',
+  },
+  {
+    id: 3,
+    title: 'RUSH: Fifty Something',
+    venue: 'Kia Forum',
+    date: 'Sun, Jun 7 - 7:30 PM',
+    image: 'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&q=80',
+  },
+  {
+    id: 4,
+    title: 'Florence + The Machine',
+    venue: 'Kia Forum',
+    date: 'Tue, May 19 - 7:30 PM',
+    image: 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&q=80',
+  },
+  {
+    id: 5,
+    title: 'New Edition: The New Edition Way',
+    venue: 'Kia Forum',
+    date: 'Sat, Jan 31 - 8:00 PM',
+    image: 'https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&q=80',
+  },
+];
+
+const popularSports = [
+  {
+    id: 1,
+    title: 'LA Clippers vs Philadelphia 76ers',
+    venue: 'Intuit Dome',
+    date: 'Mon, Feb 2 - 7:00 PM',
+    image: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80',
+  },
+  {
+    id: 2,
+    title: 'Real Madrid Leyendas v Barca Legends',
+    venue: 'BMO Stadium',
+    date: 'Sun, Feb 22 - 2:00 PM',
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=400&q=80',
+  },
+  {
+    id: 3,
+    title: 'NBA All-Star Celebrity Game',
+    venue: 'Kia Forum',
+    date: 'Fri, Feb 13 - 4:00 PM',
+    image: 'https://images.unsplash.com/photo-1504450758481-7338bbe75005?w=400&q=80',
+  },
+];
+
+const popularArts = [
+  {
+    id: 1,
+    title: 'Matt Rife: Stay Golden World Tour',
+    venue: 'Greek Theatre',
+    date: 'Sat, Jul 11 - 7:30 PM',
+    image: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=400&q=80',
+  },
+  {
+    id: 2,
+    title: 'Gabriel Iglesias & Jo Koy',
+    venue: 'SoFi Stadium',
+    date: 'Sat, Mar 21 - 7:00 PM',
+    image: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=400&q=80',
+  },
+  {
+    id: 3,
+    title: 'The Phantom of the Opera (Touring)',
+    venue: 'Hollywood Pantages Theatre',
+    date: 'Thu, Jun 25 - 2:00 PM',
+    image: 'https://images.unsplash.com/photo-1507924538820-ede94a04019d?w=400&q=80',
+  },
+];
+
+const spotlightEvents = [
+  {
+    id: 1,
+    label: 'JUST ANNOUNCED',
+    title: 'Jelly Roll: Beautifully Broken Tour',
+    subtitle: 'Summer 2026',
+    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80',
+  },
+  {
+    id: 2,
+    label: "DON'T MISS",
+    title: 'MANA: Vivir Sin Aire Tour',
+    subtitle: 'Sep 18, 2026 - Intuit Dome',
+    image: 'https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?w=800&q=80',
+  },
+  {
+    id: 3,
+    label: 'VIP PACKAGES',
+    title: 'Jack Johnson: SURFILMUSIC Tour',
+    subtitle: 'Oct 10, 2026 - Hollywood Bowl',
+    image: 'https://images.unsplash.com/photo-1506157786151-b8491531f063?w=800&q=80',
+  },
+];
+
+const venues = [
+  { name: 'Kia Forum', type: 'Concerts', location: 'Inglewood, CA' },
+  { name: 'Intuit Dome', type: 'Basketball, Concerts', location: 'Inglewood, CA' },
+  { name: 'Hollywood Bowl', type: 'Concerts', location: 'Hollywood, CA' },
+  { name: 'SoFi Stadium', type: 'Football, Concerts', location: 'Inglewood, CA' },
+  { name: 'Crypto.com Arena', type: 'Basketball, Hockey', location: 'Los Angeles, CA' },
+];
+
+type TabKey = 'Concerts' | 'Sports' | 'Arts, Theater & Comedy';
 
 export default function DiscoverPage() {
-  const [activeTab, setActiveTab] = useState('Concerts');
-  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabKey>('Concerts');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const categories = ['Concerts', 'Sports', 'Arts, Theater & Comedy'];
+  const categories: TabKey[] = ['Concerts', 'Sports', 'Arts, Theater & Comedy'];
 
-  const featuredArtists = [
-    {
-      name: 'A$AP Rocky',
-      image: 'https://images.unsplash.com/photo-1585230699768-a31a4d76e48f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxBU0FQJTIwUm9ja3klMjBjb25jZXJ0JTIwcGVyZm9ybWFuY2V8ZW58MXx8fHwxNzcxMTU0NDkzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-    },
-  ];
+  const getEventsForTab = (): typeof popularConcerts => {
+    switch (activeTab) {
+      case 'Sports': return popularSports;
+      case 'Arts, Theater & Comedy': return popularArts;
+      default: return popularConcerts;
+    }
+  };
+
+  const currentEvents = getEventsForTab();
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-tm-bg flex flex-col">
       {/* Header */}
-      <header className="bg-black px-4 py-3">
+      <header className="bg-tm-surface px-4 pt-3 pb-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex-1" />
-          <span className="text-white text-xl italic" style={{ fontFamily: 'Georgia, serif' }}>
+          <span className="text-tm-text-primary text-lg tracking-wide" style={{ fontFamily: 'Georgia, serif', fontStyle: 'italic' }}>
             ticketmaster
           </span>
           <div className="flex-1 flex justify-end">
-            <div className="w-8 h-8 rounded-full overflow-hidden">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-tm-border">
               <svg viewBox="0 0 32 32" className="w-full h-full">
-                <rect width="32" height="32" fill="#B22234"/>
-                <rect width="32" height="2.46" y="0" fill="white"/>
-                <rect width="32" height="2.46" y="4.92" fill="white"/>
-                <rect width="32" height="2.46" y="9.84" fill="white"/>
-                <rect width="32" height="2.46" y="14.76" fill="white"/>
-                <rect width="32" height="2.46" y="19.68" fill="white"/>
-                <rect width="32" height="2.46" y="24.6" fill="white"/>
-                <rect width="32" height="2.46" y="29.54" fill="white"/>
-                <rect width="12.8" height="17.38" fill="#3C3B6E"/>
+                <rect width="32" height="32" fill="#B22234" />
+                <rect width="32" height="2.46" y="0" fill="white" />
+                <rect width="32" height="2.46" y="4.92" fill="white" />
+                <rect width="32" height="2.46" y="9.84" fill="white" />
+                <rect width="32" height="2.46" y="14.76" fill="white" />
+                <rect width="32" height="2.46" y="19.68" fill="white" />
+                <rect width="32" height="2.46" y="24.6" fill="white" />
+                <rect width="32" height="2.46" y="29.54" fill="white" />
+                <rect width="12.8" height="17.38" fill="#3C3B6E" />
               </svg>
             </div>
           </div>
         </div>
 
         {/* Location and Date Filters */}
-        <div className="flex items-center gap-3 mb-4 text-sm">
-          <button className="flex items-center gap-2 text-gray-400">
-            <MapPin size={16} className="text-blue-500" />
-            <span>Los Angeles...</span>
-            <span className="text-gray-600">⊗</span>
+        <div className="flex items-center gap-3 mb-3">
+          <button className="flex items-center gap-1.5 text-sm text-tm-text-secondary">
+            <MapPin size={14} className="text-tm-blue" />
+            <span>Los Angeles, CA</span>
           </button>
-          <div className="text-gray-600">|</div>
-          <button className="flex items-center gap-2 text-gray-400">
-            <Calendar size={16} className="text-blue-500" />
+          <div className="w-px h-4 bg-tm-border" />
+          <button className="flex items-center gap-1.5 text-sm text-tm-text-secondary">
+            <Calendar size={14} className="text-tm-blue" />
             <span>All Dates</span>
           </button>
-          <span className="ml-auto text-gray-400">›</span>
         </div>
 
         {/* Search Bar */}
         <div className="relative">
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onBlur={() => setTimeout(() => setSearchFocused(false), 200)}
             placeholder="Search by Artist, Event or Venue"
-            className="w-full px-4 py-3 rounded-lg bg-white text-gray-800 placeholder-gray-400"
+            className="w-full px-4 py-3 rounded-lg bg-tm-search-bg text-tm-text-primary placeholder-tm-text-muted text-sm focus:outline-none focus:ring-1 focus:ring-tm-blue"
           />
-          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-500" size={20} />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-tm-blue" size={18} />
         </div>
+
+        {/* Trending Searches Dropdown */}
+        {searchFocused && searchQuery === '' && (
+          <div className="mt-2 bg-tm-surface-alt rounded-lg p-3">
+            <p className="text-xs text-tm-text-muted font-semibold uppercase tracking-wide mb-2">Trending Searches</p>
+            <div className="flex flex-wrap gap-2">
+              {trendingSearches.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setSearchQuery(term)}
+                  className="px-3 py-1.5 bg-tm-surface rounded-full text-xs text-tm-text-primary border border-tm-border"
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Category Tabs */}
-      <div className="px-4 py-4 flex gap-2 overflow-x-auto bg-white border-b border-gray-200">
+      <div className="px-4 py-3 flex gap-2 overflow-x-auto bg-tm-surface scrollbar-hide">
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setActiveTab(category)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium ${
+            className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors ${
               activeTab === category
-                ? 'bg-gray-800 text-white'
-                : 'bg-gray-200 text-gray-700'
+                ? 'bg-tm-blue text-white'
+                : 'bg-tm-surface-alt text-tm-text-secondary'
             }`}
           >
             {category}
@@ -84,123 +242,125 @@ export default function DiscoverPage() {
         ))}
       </div>
 
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto pb-20">
-        {/* Featured Section */}
-        <div className="relative">
-          <div className="relative h-72 overflow-hidden">
-            <img
-              src={featuredArtists[0].image}
-              alt={featuredArtists[0].name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-6 left-6">
-              <h2 className="text-white text-3xl font-bold mb-3">{featuredArtists[0].name}</h2>
-              <button className="bg-[#0060FF] text-white px-6 py-2 rounded font-semibold">
-                Sign Up
-              </button>
-            </div>
+      {/* Main Content */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pb-24">
+        {/* Featured Hero Banner */}
+        <div className="relative h-64 overflow-hidden">
+          <img
+            src={featuredBanner.image}
+            alt={featuredBanner.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute top-4 left-4">
+            <span className="bg-tm-blue text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+              {featuredBanner.label}
+            </span>
+          </div>
+          <div className="absolute bottom-5 left-4 right-4">
+            <h2 className="text-white text-2xl font-bold mb-0.5">{featuredBanner.title}</h2>
+            <p className="text-gray-300 text-sm mb-3">{featuredBanner.subtitle}</p>
+            <button className="bg-tm-blue text-white px-6 py-2.5 rounded-sm text-sm font-semibold">
+              {featuredBanner.cta}
+            </button>
           </div>
         </div>
 
-        {/* Country Section */}
+        {/* Spotlight Carousel */}
         <div className="px-4 mt-6">
-          <h3 className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-3">
-            COUNTRY
-          </h3>
-          <div className="space-y-4">
-            {/* Megan Moroney Card */}
-            <div>
-              <div className="relative h-56 rounded-lg overflow-hidden mb-2">
-                <img
-                  src="https://images.unsplash.com/photo-1641169126640-b72d61ebab33?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxNZWdhbiUyME1vcm9uZXklMjBjb3VudHJ5JTIwc2luZ2VyJTIwcGlua3xlbnwxfHx8fDE3NzExNTQ0OTN8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Megan Moroney"
-                  className="w-full h-full object-cover"
-                />
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-tm-text-primary text-base font-bold">Spotlight</h3>
+            <button className="text-tm-blue text-xs font-semibold flex items-center gap-0.5">
+              See All <ChevronRight size={12} />
+            </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4">
+            {spotlightEvents.map((evt) => (
+              <div key={evt.id} className="min-w-[260px] rounded-lg overflow-hidden bg-tm-surface flex-shrink-0">
+                <div className="relative h-36">
+                  <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <span className="absolute top-2 left-2 bg-tm-blue text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">
+                    {evt.label}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="text-tm-text-primary text-sm font-semibold leading-tight">{evt.title}</p>
+                  <p className="text-tm-text-secondary text-xs mt-1">{evt.subtitle}</p>
+                </div>
               </div>
-              <h4 className="text-black text-lg font-bold">Megan Moroney</h4>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* VIP - Boys 4 Life Tour Card */}
-            <div>
-              <div className="relative h-56 rounded-lg overflow-hidden mb-2">
-                <img
-                  src="https://images.unsplash.com/photo-1642524757798-2a128dfab358?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib3lzJTIwYmFuZCUyMGdyb3VwJTIwdG91ciUyMGNvbmNlcnR8ZW58MXx8fHwxNzcxMTU2MDA2fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Boys 4 Life Tour"
-                  className="w-full h-full object-cover"
-                />
+        {/* Popular Events for Active Tab */}
+        <div className="px-4 mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-tm-text-primary text-base font-bold">
+              Popular {activeTab === 'Arts, Theater & Comedy' ? 'Shows' : activeTab}
+            </h3>
+            <button className="text-tm-blue text-xs font-semibold flex items-center gap-0.5">
+              See All <ChevronRight size={12} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-3">
+            {currentEvents.map((event) => (
+              <div key={event.id} className="flex items-center gap-3 bg-tm-surface rounded-lg p-2.5">
+                <div className="w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
+                  <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-tm-text-primary text-sm font-semibold leading-tight truncate">{event.title}</p>
+                  <p className="text-tm-text-secondary text-xs mt-1">{event.date}</p>
+                  <p className="text-tm-text-muted text-xs mt-0.5">{event.venue}</p>
+                </div>
+                <ChevronRight size={16} className="text-tm-text-muted flex-shrink-0" />
               </div>
-              <h4 className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1">
-                GO AS A VIP
-              </h4>
-              <h3 className="text-black text-lg font-bold">Boys 4 Life Tour</h3>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* Band on Couch Card */}
-            <div>
-              <div className="relative h-56 rounded-lg overflow-hidden mb-2">
-                <img
-                  src="https://images.unsplash.com/photo-1605370692977-3c272ddb10ef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiYW5kJTIwbWVtYmVycyUyMGNvdWNoJTIwcmVkJTIwc29mYXxlbnwxfHx8fDE3NzExNTYwMDZ8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Band on red couch"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
+        {/* Trending Near You */}
+        <div className="px-4 mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-tm-text-primary text-base font-bold">Trending Near You</h3>
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4">
+            {trendingSearches.slice(0, 5).map((artist) => (
+              <button
+                key={artist}
+                className="flex flex-col items-center gap-2 min-w-[80px] flex-shrink-0"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-tm-blue to-tm-surface flex items-center justify-center overflow-hidden">
+                  <span className="text-white text-lg font-bold">{artist.charAt(0)}</span>
+                </div>
+                <span className="text-tm-text-primary text-[11px] text-center leading-tight">{artist}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-            {/* GET THE VIP TREATMENT - 5 Seconds of Summer Card */}
-            <div>
-              <div className="relative h-56 rounded-lg overflow-hidden mb-2">
-                <img
-                  src="https://images.unsplash.com/photo-1626766859896-d2ccd8513593?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHw1JTIwc2Vjb25kcyUyMHN1bW1lciUyMGJhbmQlMjBjb25jZXJ0fGVufDF8fHx8MTc3MTE1NjAwNnww&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="5 Seconds of Summer"
-                  className="w-full h-full object-cover"
-                />
+        {/* Popular Venues */}
+        <div className="px-4 mt-6 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-tm-text-primary text-base font-bold">Popular Venues</h3>
+            <button className="text-tm-blue text-xs font-semibold flex items-center gap-0.5">
+              See All <ChevronRight size={12} />
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {venues.map((venue) => (
+              <div key={venue.name} className="flex items-center justify-between bg-tm-surface rounded-lg px-3 py-3">
+                <div>
+                  <p className="text-tm-text-primary text-sm font-medium">{venue.name}</p>
+                  <p className="text-tm-text-muted text-xs mt-0.5">{venue.type} &middot; {venue.location}</p>
+                </div>
+                <ChevronRight size={16} className="text-tm-text-muted" />
               </div>
-              <h4 className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1">
-                GET THE VIP TREATMENT
-              </h4>
-              <h3 className="text-black text-lg font-bold">5 Seconds of Summer</h3>
-            </div>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-2">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center gap-1 text-blue-500"
-          >
-            <Search size={24} />
-            <span className="text-xs">Discover</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <Heart size={24} />
-            <span className="text-xs">Favourites</span>
-          </button>
-          <button
-            onClick={() => navigate('/my-events')}
-            className="flex flex-col items-center gap-1 text-gray-400"
-          >
-            <Ticket size={24} />
-            <span className="text-xs">My Events</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <Camera size={24} />
-            <span className="text-xs">Sell</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <User size={24} />
-            <span className="text-xs">My Account</span>
-          </button>
-        </div>
-        {/* Home Indicator */}
-        <div className="flex justify-center mt-1">
-          <div className="w-32 h-1 bg-black rounded-full"></div>
-        </div>
-      </nav>
     </div>
   );
 }

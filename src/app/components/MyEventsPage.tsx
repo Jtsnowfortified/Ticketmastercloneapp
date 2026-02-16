@@ -1,186 +1,175 @@
-import { Search, Heart, Ticket, Camera, User } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
 export default function MyEventsPage() {
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
   const navigate = useNavigate();
 
   const upcomingEvents = [
     {
       id: 1,
-      date: 'FRI - JUL 24, 2026 - 8:00 PM',
-      title: 'ARIANA GRANDE - THE ETERNAL SUNSHINE TOUR',
-      venue: 'TD Garden, Boston, MA',
-      image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      tickets: 2,
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      tickets: 4,
+      image:
+        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 2,
-      date: 'SAT - OCT 31, 2026 - 8:00 PM',
-      title: 'HARRY STYLES: TOGETHER, TOGETHER. HARRYWEEN.',
-      venue: 'Madison Square Garden, New York, NY',
-      image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweYlMjwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      title: 'Chris Brown: Breezy Bowl XX',
+      date: 'Sun, Sept 14, 7:00pm',
+      venue: 'SoFi Stadium',
+      tickets: 3,
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    },
+    {
+      id: 3,
+      title: 'Lady Gaga: The MAYHEM Ball',
+      date: 'Thu, Sep 11, 2025, 8:00 PM',
+      venue: 'Scotiabank Arena',
+      tickets: 1,
+      image:
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
+    },
+    {
+      id: 4,
+      title: 'Harry Styles: Together, Together.',
+      date: 'Sat, Sep 05, 2026, 8:00 PM',
+      venue: 'Madison Square Garden',
       tickets: 2,
+      image:
+        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
     },
   ];
 
+  const pastEvents: typeof upcomingEvents = [];
+
+  const events = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
+
   return (
-    <div className="min-h-screen bg-black flex flex-col">
-      {/* Header */}
-      <header className="bg-black px-4 py-3 border-b border-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex-1" />
-          <div className="flex items-center gap-2">
-            <span className="text-white text-lg font-semibold">My Events</span>
-            <div className="w-6 h-6 rounded-full overflow-hidden">
+    <div className="min-h-screen bg-tm-bg flex flex-col">
+      {/* Header - ticketmaster logo matching real TM app */}
+      <header className="bg-tm-surface px-4 pt-3 pb-0">
+        <div className="flex items-center justify-between mb-3">
+          {/* Ticketmaster logo */}
+          <div className="flex items-center gap-1.5">
+            <span
+              className="text-2xl font-bold tracking-tight"
+              style={{
+                fontFamily: "'Georgia', 'Times New Roman', serif",
+                fontStyle: 'italic',
+                color: 'var(--tm-blue)',
+              }}
+            >
+              ticketmaster
+            </span>
+            <span className="text-xs align-top" style={{ color: 'var(--tm-blue)', fontFamily: 'serif' }}>
+              {'®'}
+            </span>
+            {/* US Flag icon */}
+            <div className="w-5 h-5 rounded-full overflow-hidden ml-0.5 flex-shrink-0 border border-tm-border">
               <svg viewBox="0 0 32 32" className="w-full h-full">
-                <rect width="32" height="32" fill="#B22234"/>
-                <rect width="32" height="2.46" y="0" fill="white"/>
-                <rect width="32" height="2.46" y="4.92" fill="white"/>
-                <rect width="32" height="2.46" y="9.84" fill="white"/>
-                <rect width="32" height="2.46" y="14.76" fill="white"/>
-                <rect width="32" height="2.46" y="19.68" fill="white"/>
-                <rect width="32" height="2.46" y="24.6" fill="white"/>
-                <rect width="32" height="2.46" y="29.54" fill="white"/>
-                <rect width="12.8" height="17.38" fill="#3C3B6E"/>
+                <rect width="32" height="32" fill="#B22234" />
+                <rect width="32" height="2.46" y="2.46" fill="white" />
+                <rect width="32" height="2.46" y="7.38" fill="white" />
+                <rect width="32" height="2.46" y="12.3" fill="white" />
+                <rect width="32" height="2.46" y="17.22" fill="white" />
+                <rect width="32" height="2.46" y="22.14" fill="white" />
+                <rect width="32" height="2.46" y="27.06" fill="white" />
+                <rect width="12.8" height="17.22" fill="#3C3B6E" />
               </svg>
             </div>
           </div>
-          <div className="flex-1 flex justify-end">
-            <button className="text-white text-sm">Help</button>
-          </div>
+          {/* Help button */}
+          <button className="text-tm-text-primary text-base font-medium">Help</button>
         </div>
+      </header>
 
-        {/* Tabs */}
-        <div className="flex gap-6">
+      {/* Tabs - Upcoming / Past with blue indicator bar */}
+      <div className="bg-tm-surface border-b border-tm-border">
+        <div className="flex">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`pb-3 text-sm font-semibold tracking-wide relative ${
-              activeTab === 'upcoming' ? 'text-white' : 'text-gray-500'
-            }`}
+            className="flex-1 relative py-3 text-center"
           >
-            UPCOMING ({upcomingEvents.length})
+            <span
+              className={`text-base font-semibold ${
+                activeTab === 'upcoming' ? 'text-tm-text-primary' : 'text-tm-text-muted'
+              }`}
+            >
+              Upcoming
+            </span>
             {activeTab === 'upcoming' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full bg-tm-blue" />
             )}
           </button>
           <button
             onClick={() => setActiveTab('past')}
-            className={`pb-3 text-sm font-semibold tracking-wide relative ${
-              activeTab === 'past' ? 'text-white' : 'text-gray-500'
-            }`}
+            className="flex-1 relative py-3 text-center"
           >
-            PAST (0)
+            <span
+              className={`text-base font-semibold ${
+                activeTab === 'past' ? 'text-tm-text-primary' : 'text-tm-text-muted'
+              }`}
+            >
+              Past
+            </span>
             {activeTab === 'past' && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full bg-tm-blue" />
             )}
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto pb-20 px-4 pt-4">
-        {activeTab === 'upcoming' && (
-          <div className="space-y-4">
-            {upcomingEvents.map((event) => (
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto pb-24 bg-tm-bg">
+        {events.length > 0 ? (
+          <div className="flex flex-col gap-4 p-4">
+            {events.map((event) => (
               <button
                 key={event.id}
                 onClick={() => navigate(`/my-tickets/${event.id}`)}
-                className="relative rounded-lg overflow-hidden w-full text-left"
+                className="relative rounded-2xl overflow-hidden w-full text-left"
+                style={{ boxShadow: '0 1px 8px var(--tm-card-overlay)' }}
               >
-                <div className="relative h-96">
+                {/* Event image - tall card */}
+                <div className="relative" style={{ height: '260px' }}>
                   <img
                     src={event.image}
                     alt={event.title}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <p className="text-white text-xs font-semibold uppercase tracking-wide mb-3">
-                      {event.date}
-                    </p>
-                    <h3 className="text-white text-xl font-bold mb-3 leading-tight">
+                  {/* Gradient overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  {/* Event info overlaid at the bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+                    <h3 className="text-white text-lg font-bold leading-snug mb-1">
                       {event.title}
                     </h3>
-                    <div className="flex items-center justify-between">
-                      <p className="text-gray-400 text-sm">{event.venue}</p>
-                      <div className="flex items-center gap-1 text-gray-400 text-xs">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          className="text-gray-400"
-                        >
-                          <rect
-                            x="2"
-                            y="2"
-                            width="12"
-                            height="12"
-                            rx="1"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                          />
-                          <path
-                            d="M2 6h12M6 2v4M10 2v4"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <span>x{event.tickets}</span>
-                      </div>
-                    </div>
+                    <p className="text-white/80 text-sm">
+                      {event.date} {'\u00B7'} {event.venue}
+                    </p>
+                    <p className="text-white/80 text-sm mt-0.5">
+                      {event.tickets} {event.tickets === 1 ? 'ticket' : 'tickets'}
+                    </p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
-        )}
-
-        {activeTab === 'past' && (
-          <div className="flex items-center justify-center h-64">
-            <p className="text-gray-500 text-center">No past events</p>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 text-center px-6">
+            <Ticket size={48} className="text-tm-text-muted mb-4" />
+            <p className="text-tm-text-secondary text-base font-medium">No past events</p>
+            <p className="text-tm-text-muted text-sm mt-1">
+              Events you've attended will show up here
+            </p>
           </div>
         )}
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-black border-t border-gray-800 px-6 py-2">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center gap-1 text-gray-400"
-          >
-            <Search size={24} />
-            <span className="text-xs">Discover</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <Heart size={24} />
-            <span className="text-xs">Favourites</span>
-          </button>
-          <button
-            onClick={() => navigate('/my-events')}
-            className="flex flex-col items-center gap-1 text-blue-500"
-          >
-            <Ticket size={24} />
-            <span className="text-xs">My Events</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <Camera size={24} />
-            <span className="text-xs">Sell</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-gray-400">
-            <User size={24} />
-            <span className="text-xs">My Account</span>
-          </button>
-        </div>
-        {/* Home Indicator */}
-        <div className="flex justify-center mt-1">
-          <div className="w-32 h-1 bg-white rounded-full opacity-30"></div>
-        </div>
-      </nav>
     </div>
   );
 }
