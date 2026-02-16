@@ -1,348 +1,569 @@
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Info } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 interface TicketData {
   ticketType: string;
   section: string;
   row: string;
   seat: string;
+  generalAdmission?: string; // e.g. "General Admission" replaces ROW/SEAT
   title: string;
   date: string;
-  time: string;
   venue: string;
-  location: string;
   image: string;
-  levelView: string;
+  levelLabel: string; // "Verified Fan Seller" | "Lower Level" | "Mobile" | "LOWER LEVEL"
+  deliveryMethod: 'wallet' | 'view' | 'countdown'; // determines card action
+  countdownTarget?: string; // ISO date for countdown
+  sellActive: boolean; // whether Sell button is blue or gray
+  mapQuery: string; // for static map embed
+  venueName: string;
 }
 
+/* ------------------------------------------------------------------ */
+/*  Mock ticket data matching the real TM screenshots                  */
+/* ------------------------------------------------------------------ */
+// TODO: Replace mock tickets array with real fetch from authenticated backend/user tickets API
+const eventTickets: Record<string, TicketData[]> = {
+  '1': [
+    {
+      ticketType: 'Artist Presale',
+      section: 'D',
+      row: '7',
+      seat: '1',
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      image:
+        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Verified Fan Seller',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
+      venueName: 'Hollywood Bowl',
+    },
+    {
+      ticketType: 'Artist Presale',
+      section: 'D',
+      row: '7',
+      seat: '2',
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      image:
+        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Verified Fan Seller',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
+      venueName: 'Hollywood Bowl',
+    },
+    {
+      ticketType: 'Artist Presale',
+      section: 'D',
+      row: '7',
+      seat: '3',
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      image:
+        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Verified Fan Seller',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
+      venueName: 'Hollywood Bowl',
+    },
+    {
+      ticketType: 'Artist Presale',
+      section: 'D',
+      row: '7',
+      seat: '4',
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      image:
+        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Verified Fan Seller',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
+      venueName: 'Hollywood Bowl',
+    },
+  ],
+  '2': [
+    {
+      ticketType: 'Standard Tickets',
+      section: '124',
+      row: '15',
+      seat: '5',
+      title: 'Chris Brown: Breezy Bowl XX',
+      date: 'Sun, Sept 14, 7:00pm',
+      venue: 'SoFi Stadium',
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'LOWER LEVEL',
+      deliveryMethod: 'view',
+      sellActive: true,
+      mapQuery: 'SoFi+Stadium+Inglewood+CA',
+      venueName: 'SoFi Stadium',
+    },
+    {
+      ticketType: 'Standard Tickets',
+      section: '124',
+      row: '15',
+      seat: '6',
+      title: 'Chris Brown: Breezy Bowl XX',
+      date: 'Sun, Sept 14, 7:00pm',
+      venue: 'SoFi Stadium',
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'LOWER LEVEL',
+      deliveryMethod: 'view',
+      sellActive: true,
+      mapQuery: 'SoFi+Stadium+Inglewood+CA',
+      venueName: 'SoFi Stadium',
+    },
+    {
+      ticketType: 'Standard Tickets',
+      section: '124',
+      row: '15',
+      seat: '7',
+      title: 'Chris Brown: Breezy Bowl XX',
+      date: 'Sun, Sept 14, 7:00pm',
+      venue: 'SoFi Stadium',
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'LOWER LEVEL',
+      deliveryMethod: 'view',
+      sellActive: true,
+      mapQuery: 'SoFi+Stadium+Inglewood+CA',
+      venueName: 'SoFi Stadium',
+    },
+  ],
+  '3': [
+    {
+      ticketType: 'General Sale',
+      section: '248',
+      row: '11',
+      seat: '18',
+      title: 'Lady Gaga: The MAYHEM Ball',
+      date: 'Thu, Sep 11, 2025, 8:00 PM',
+      venue: 'Scotiabank Arena',
+      image:
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
+      levelLabel: '',
+      deliveryMethod: 'countdown',
+      countdownTarget: new Date(Date.now() + 39 * 86400000 + 13 * 3600000).toISOString(),
+      sellActive: false,
+      mapQuery: 'Scotiabank+Arena+Toronto',
+      venueName: 'Scotiabank Arena',
+    },
+  ],
+  '4': [
+    {
+      ticketType: 'Artist Presale',
+      section: '221',
+      row: '13',
+      seat: '21',
+      title: 'Harry Styles: Together, Together.',
+      date: 'Sat, Sep 05, 2026, 8:00 PM',
+      venue: 'Madison Square Garden',
+      image:
+        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
+      levelLabel: 'Mobile',
+      deliveryMethod: 'view',
+      sellActive: true,
+      mapQuery: 'Madison+Square+Garden+New+York',
+      venueName: 'Madison Square Garden',
+    },
+    {
+      ticketType: 'Artist Presale',
+      section: '221',
+      row: '13',
+      seat: '22',
+      title: 'Harry Styles: Together, Together.',
+      date: 'Sat, Sep 05, 2026, 8:00 PM',
+      venue: 'Madison Square Garden',
+      image:
+        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
+      levelLabel: 'Mobile',
+      deliveryMethod: 'view',
+      sellActive: true,
+      mapQuery: 'Madison+Square+Garden+New+York',
+      venueName: 'Madison Square Garden',
+    },
+  ],
+};
+
+/* ------------------------------------------------------------------ */
+/*  Countdown Timer                                                    */
+/* ------------------------------------------------------------------ */
+function CountdownTimer({ targetDate }: { targetDate: string }) {
+  const calcTimeLeft = useCallback(() => {
+    const diff = new Date(targetDate).getTime() - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    return {
+      days: Math.floor(diff / 86400000),
+      hours: Math.floor((diff % 86400000) / 3600000),
+      minutes: Math.floor((diff % 3600000) / 60000),
+      seconds: Math.floor((diff % 60000) / 1000),
+    };
+  }, [targetDate]);
+
+  const [timeLeft, setTimeLeft] = useState(calcTimeLeft);
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLeft(calcTimeLeft()), 1000);
+    return () => clearInterval(id);
+  }, [calcTimeLeft]);
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  return (
+    <div className="py-5 px-4 text-center">
+      <p className="text-tm-text-primary text-base font-semibold mb-4">
+        {'Ticket will be ready in:'}
+      </p>
+      <div className="flex items-center justify-center gap-3">
+        {[
+          { val: timeLeft.days, label: 'DAY' },
+          { val: timeLeft.hours, label: 'HOUR' },
+          { val: timeLeft.minutes, label: 'MIN' },
+          { val: timeLeft.seconds, label: 'SECONDS' },
+        ].map((u) => (
+          <div key={u.label} className="flex flex-col items-center">
+            <span className="text-tm-text-primary text-4xl font-bold leading-none">
+              {pad(u.val)}
+            </span>
+            <span className="text-tm-text-muted text-[10px] font-semibold tracking-wider mt-1.5">
+              {u.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Ticket Card                                                        */
+/* ------------------------------------------------------------------ */
+function TicketCard({ ticket }: { ticket: TicketData }) {
+  return (
+    <div className="rounded-2xl overflow-hidden mx-2 bg-tm-surface" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+      {/* Ticket Type Badge */}
+      <div className="relative py-2.5 text-center" style={{ backgroundColor: '#0060FF' }}>
+        <span className="text-white text-sm font-semibold tracking-wide">
+          {ticket.ticketType}
+        </span>
+        <button className="absolute right-3 top-1/2 -translate-y-1/2" aria-label="Info">
+          <Info size={20} className="text-white/70" />
+        </button>
+      </div>
+
+      {/* SEC / ROW / SEAT */}
+      {ticket.generalAdmission ? (
+        <div className="flex items-center justify-around py-5 px-4" style={{ backgroundColor: '#0060FF' }}>
+          <div className="text-center">
+            <div className="text-[10px] font-medium tracking-widest mb-1 text-white/55">SEC</div>
+            <div className="text-white text-3xl font-bold leading-none">{ticket.section}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-white text-2xl font-bold leading-none">{ticket.generalAdmission}</div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-around py-5 px-4" style={{ backgroundColor: '#0060FF' }}>
+          {[
+            { label: 'SEC', value: ticket.section },
+            { label: 'ROW', value: ticket.row },
+            { label: 'SEAT', value: ticket.seat },
+          ].map((col) => (
+            <div key={col.label} className="text-center flex-1">
+              <div className="text-[10px] font-medium tracking-widest mb-1 text-white/55">
+                {col.label}
+              </div>
+              <div className="text-white text-4xl font-bold leading-none">{col.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Event Image */}
+      <div className="relative" style={{ height: '220px' }}>
+        <img src={ticket.image} alt={ticket.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
+          <h2 className="text-white text-xl font-bold mb-1.5 leading-tight">{ticket.title}</h2>
+          <p className="text-white/90 text-sm leading-snug">
+            {ticket.date} {'\u00B7'} {ticket.venue}
+          </p>
+        </div>
+      </div>
+
+      {/* White content section below image */}
+      <div className="bg-tm-surface">
+        {/* Level label */}
+        {ticket.levelLabel && (
+          <div className="pt-4 pb-2 text-center">
+            <p className="text-tm-text-primary text-base font-semibold">{ticket.levelLabel}</p>
+          </div>
+        )}
+
+        {/* Countdown (only for countdown delivery) */}
+        {ticket.deliveryMethod === 'countdown' && ticket.countdownTarget && (
+          <CountdownTimer targetDate={ticket.countdownTarget} />
+        )}
+
+        {/* Action: Add to Apple Wallet */}
+        {ticket.deliveryMethod === 'wallet' && (
+          <div className="px-5 pt-3 pb-3">
+            <button className="w-full bg-black text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5">
+              <AppleWalletIcon />
+              {'Add to Apple Wallet'}
+            </button>
+          </div>
+        )}
+
+        {/* Action: View Ticket */}
+        {ticket.deliveryMethod === 'view' && (
+          <div className="px-5 pt-3 pb-3">
+            <button
+              className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5 text-white"
+              style={{ backgroundColor: '#0060FF' }}
+            >
+              <BarcodeIcon />
+              {'View Ticket'}
+            </button>
+          </div>
+        )}
+
+        {/* Links: View Barcode + Ticket Details */}
+        {ticket.deliveryMethod === 'wallet' && (
+          <div className="px-4 pb-3 flex items-center justify-center gap-10">
+            <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
+              View Barcode
+            </button>
+            <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
+              Ticket Details
+            </button>
+          </div>
+        )}
+
+        {/* Ticket Details only (for view / countdown) */}
+        {ticket.deliveryMethod !== 'wallet' && (
+          <div className="px-4 pb-3 text-center">
+            <button className="text-sm font-semibold" style={{ color: '#0060FF' }}>
+              Ticket Details
+            </button>
+          </div>
+        )}
+
+        {/* Verified badge (wallet tickets) */}
+        {ticket.deliveryMethod === 'wallet' && (
+          <div className="px-5 pb-5">
+            <div className="py-3 rounded-xl flex items-center justify-center gap-2" style={{ backgroundColor: '#0060FF' }}>
+              <VerifiedIcon />
+              <span className="text-white text-sm font-medium">{'ticketmaster.verified'}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main Page                                                          */
+/* ------------------------------------------------------------------ */
 export default function MyTicketsPage() {
   const navigate = useNavigate();
   const { eventId } = useParams();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
-
-  // Each event can have multiple tickets (seats)
-  const eventTickets: Record<string, TicketData[]> = {
-    '1': [
-      {
-        ticketType: 'Artist Presale',
-        section: 'D',
-        row: '7',
-        seat: '1',
-        title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-        date: 'Sat, Nov 8, 2025',
-        time: '7:00 PM',
-        venue: 'Hollywood Bowl',
-        location: 'Hollywood, CA',
-        image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Verified Fan Seller',
-      },
-      {
-        ticketType: 'Artist Presale',
-        section: 'D',
-        row: '7',
-        seat: '2',
-        title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-        date: 'Sat, Nov 8, 2025',
-        time: '7:00 PM',
-        venue: 'Hollywood Bowl',
-        location: 'Hollywood, CA',
-        image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Verified Fan Seller',
-      },
-      {
-        ticketType: 'Artist Presale',
-        section: 'D',
-        row: '7',
-        seat: '3',
-        title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-        date: 'Sat, Nov 8, 2025',
-        time: '7:00 PM',
-        venue: 'Hollywood Bowl',
-        location: 'Hollywood, CA',
-        image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Verified Fan Seller',
-      },
-      {
-        ticketType: 'Artist Presale',
-        section: 'D',
-        row: '7',
-        seat: '4',
-        title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-        date: 'Sat, Nov 8, 2025',
-        time: '7:00 PM',
-        venue: 'Hollywood Bowl',
-        location: 'Hollywood, CA',
-        image: 'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Verified Fan Seller',
-      },
-    ],
-    '2': [
-      {
-        ticketType: 'Verified Resale Ticket',
-        section: '114',
-        row: '25',
-        seat: '3',
-        title: 'Chris brown: Breezy Bowl XX',
-        date: 'Wed, sep 24, 2025',
-        time: '7:00 PM',
-        venue: 'Coors field',
-        location: '',
-        image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Lower level',
-      },
-      {
-        ticketType: 'Verified Resale Ticket',
-        section: '114',
-        row: '25',
-        seat: '4',
-        title: 'Chris brown: Breezy Bowl XX',
-        date: 'Wed, sep 24, 2025',
-        time: '7:00 PM',
-        venue: 'Coors field',
-        location: '',
-        image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Lower level',
-      },
-      {
-        ticketType: 'Verified Resale Ticket',
-        section: '114',
-        row: '25',
-        seat: '5',
-        title: 'Chris brown: Breezy Bowl XX',
-        date: 'Wed, sep 24, 2025',
-        time: '7:00 PM',
-        venue: 'Coors field',
-        location: '',
-        image: 'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-        levelView: 'Lower level',
-      },
-    ],
-  };
+  const [activeTab, setActiveTab] = useState<'tickets' | 'addons'>('tickets');
 
   const tickets = eventTickets[eventId || '2'] || eventTickets['2'];
+  const currentTicket = tickets[0];
 
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
-    const container = scrollRef.current;
-    const scrollLeft = container.scrollLeft;
-    const cardWidth = container.offsetWidth;
-    const index = Math.round(scrollLeft / cardWidth);
-    setActiveTicketIndex(Math.min(index, tickets.length - 1));
+    const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
+    setActiveTicketIndex(Math.min(idx, tickets.length - 1));
   }, [tickets.length]);
 
   useEffect(() => {
-    const container = scrollRef.current;
-    if (!container) return;
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', handleScroll);
+    return () => el.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  const scrollToTicket = (index: number) => {
-    if (!scrollRef.current) return;
-    const cardWidth = scrollRef.current.offsetWidth;
-    scrollRef.current.scrollTo({ left: cardWidth * index, behavior: 'smooth' });
+  const scrollToTicket = (i: number) => {
+    scrollRef.current?.scrollTo({ left: scrollRef.current.offsetWidth * i, behavior: 'smooth' });
   };
 
-  const currentTicket = tickets[activeTicketIndex];
-
   return (
-    <div className="min-h-screen flex flex-col bg-tm-surface-alt">
-      {/* Header - adapts to dark/light mode */}
-      <header className="flex items-center justify-between px-4 bg-tm-surface-alt py-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-tm-text-primary p-1"
-          aria-label="Close"
-        >
-          <X size={22} strokeWidth={2.5} />
+    <div className="min-h-screen flex flex-col bg-tm-surface">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-3 bg-tm-surface">
+        <button onClick={() => navigate(-1)} className="text-tm-text-primary p-1" aria-label="Close">
+          <X size={24} strokeWidth={2.5} />
         </button>
         <h1 className="text-tm-text-primary text-lg font-bold tracking-tight">My Tickets</h1>
         <button className="text-tm-text-primary text-base font-medium">Help</button>
       </header>
 
-      {/* Thin blue accent line under header */}
-      <div className="w-full h-[2px]" style={{ backgroundColor: '#0060FF' }} />
+      {/* MY TICKETS / ADD-ONS tabs */}
+      <div className="flex bg-tm-surface border-b border-tm-border">
+        <button
+          onClick={() => setActiveTab('tickets')}
+          className={`flex-1 text-center py-3 text-sm font-bold tracking-wide transition-colors ${
+            activeTab === 'tickets'
+              ? 'text-tm-text-primary border-b-[3px] border-[#0060FF]'
+              : 'text-tm-text-muted border-b-[3px] border-transparent'
+          }`}
+        >
+          MY TICKETS {tickets.length}
+        </button>
+        <button
+          onClick={() => setActiveTab('addons')}
+          className={`flex-1 text-center py-3 text-sm font-bold tracking-wide transition-colors ${
+            activeTab === 'addons'
+              ? 'text-tm-text-primary border-b-[3px] border-[#0060FF]'
+              : 'text-tm-text-muted border-b-[3px] border-transparent'
+          }`}
+        >
+          ADD-ONS
+        </button>
+      </div>
 
-      {/* Main scrollable content */}
-      <div className="flex-1 overflow-y-auto bg-tm-surface-alt">
-        <div className="px-4 pt-5 pb-4">
-          {/* Horizontal ticket carousel */}
-          <div
-            ref={scrollRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              WebkitOverflowScrolling: 'touch',
-            }}
-          >
-            {tickets.map((ticket, index) => (
+      {/* Main scrollable */}
+      <div className="flex-1 overflow-y-auto bg-tm-bg">
+        {activeTab === 'tickets' ? (
+          <>
+            <div className="pt-5 pb-2">
+              {/* Ticket Carousel */}
               <div
-                key={index}
-                className="flex-shrink-0 w-full snap-center"
+                ref={scrollRef}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
               >
-                <TicketCard ticket={ticket} />
+                {tickets.map((ticket, i) => (
+                  <div key={i} className="flex-shrink-0 w-full snap-center">
+                    <TicketCard ticket={ticket} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Pagination dots */}
-          {tickets.length > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
-              {tickets.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollToTicket(index)}
-                  className="w-2 h-2 rounded-full transition-colors duration-200"
-                  style={{
-                    backgroundColor: index === activeTicketIndex ? '#0060FF' : '#6B7280',
-                  }}
-                  aria-label={`Go to ticket ${index + 1}`}
-                />
-              ))}
+              {/* Pagination dots */}
+              {tickets.length > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                  {tickets.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToTicket(i)}
+                      className="w-2 h-2 rounded-full transition-colors"
+                      style={{ backgroundColor: i === activeTicketIndex ? '#0060FF' : '#C4C4C4' }}
+                      aria-label={`Go to ticket ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* "How Do I Manage My Tickets?" link */}
+              {currentTicket.deliveryMethod === 'countdown' && (
+                <div className="text-center mt-3 mb-1">
+                  <button className="text-sm font-semibold" style={{ color: '#0060FF' }}>
+                    {'How Do I Manage My Tickets?'}
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Transfer / Sell buttons */}
-        <div className="px-5 pb-6 pt-2 flex gap-3">
-          <button
-            className="flex-1 py-3.5 rounded-lg font-bold text-base text-white"
-            style={{ backgroundColor: '#0060FF' }}
-          >
-            Transfer
-          </button>
-          <button
-            className="flex-1 py-3.5 rounded-lg font-bold text-base"
-            style={{ backgroundColor: '#C4C4C4', color: '#888888' }}
-          >
-            Sell
-          </button>
-        </div>
+            {/* Transfer / Sell buttons */}
+            <div className="px-4 pb-4 pt-2 flex gap-3">
+              <button
+                className="flex-1 py-3.5 rounded-lg font-bold text-base text-white"
+                style={{ backgroundColor: '#0060FF' }}
+              >
+                Transfer
+              </button>
+              <button
+                className="flex-1 py-3.5 rounded-lg font-bold text-base"
+                style={{
+                  backgroundColor: currentTicket.sellActive ? '#0060FF' : '#D1D5DB',
+                  color: currentTicket.sellActive ? '#FFFFFF' : '#9CA3AF',
+                }}
+              >
+                Sell
+              </button>
+            </div>
+
+            {/* Static Map Preview */}
+            <div className="px-0 pb-6">
+              <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
+                <iframe
+                  title={`Map of ${currentTicket.venueName}`}
+                  src={`https://maps.google.com/maps?q=${currentTicket.mapQuery}&z=15&output=embed`}
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  style={{ pointerEvents: 'none' }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-tm-surface px-3 py-2">
+                  <p className="text-tm-text-primary text-sm font-bold">{currentTicket.venueName}</p>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* ADD-ONS empty state */
+          <div className="flex flex-col items-center justify-center py-20 px-6">
+            <p className="text-tm-text-muted text-base text-center">
+              No add-ons available for this event.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Home Indicator */}
-      <div className="flex justify-center pb-2 pt-1 bg-tm-surface-alt">
+      <div className="flex justify-center pb-2 pt-1 bg-tm-bg">
         <div className="w-32 h-1 rounded-full bg-tm-text-muted/40" />
       </div>
     </div>
   );
 }
 
-function TicketCard({ ticket }: { ticket: TicketData }) {
-  const venueDisplay = ticket.location
-    ? `${ticket.venue}\n${ticket.location}`
-    : `${ticket.venue}`;
-
-  return (
-    <div
-      className="rounded-2xl overflow-hidden mx-1"
-      style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
-    >
-      {/* Ticket Type Badge */}
-      <div
-        className="py-2.5 text-center"
-        style={{ backgroundColor: '#0060FF' }}
-      >
-        <span className="text-white text-sm font-semibold tracking-wide">
-          {ticket.ticketType}
-        </span>
-      </div>
-
-      {/* Section / Row / Seat */}
-      <div
-        className="flex items-center justify-around py-5 px-4"
-        style={{ backgroundColor: '#0060FF' }}
-      >
-        <div className="text-center flex-1">
-          <div className="text-xs font-medium tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            SEC
-          </div>
-          <div className="text-white text-4xl font-bold leading-none">{ticket.section}</div>
-        </div>
-        <div className="text-center flex-1">
-          <div className="text-xs font-medium tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            ROW
-          </div>
-          <div className="text-white text-4xl font-bold leading-none">{ticket.row}</div>
-        </div>
-        <div className="text-center flex-1">
-          <div className="text-xs font-medium tracking-widest mb-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
-            SEAT
-          </div>
-          <div className="text-white text-4xl font-bold leading-none">{ticket.seat}</div>
-        </div>
-      </div>
-
-      {/* Event Image with overlay text */}
-      <div className="relative" style={{ height: '220px' }}>
-        <img
-          src={ticket.image}
-          alt={ticket.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 text-center">
-          <h2 className="text-white text-xl font-bold mb-2 leading-tight">
-            {ticket.title}
-          </h2>
-          <p className="text-white text-sm leading-snug">
-            {ticket.date}, {ticket.time} {'\u00B7'} {venueDisplay.split('\n').map((line, i) => (
-              <span key={i}>
-                {i > 0 && <br />}
-                {line}
-              </span>
-            ))}
-          </p>
-        </div>
-      </div>
-
-      {/* Level / Seller label */}
-      <div className="bg-white px-4 pt-4 pb-3 text-center">
-        <p className="text-black text-base font-medium">{ticket.levelView}</p>
-      </div>
-
-      {/* Add to Apple Wallet */}
-      <div className="bg-white px-5 pb-4">
-        <button className="w-full bg-black text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5">
-          <AppleWalletIcon />
-          Add to Apple Wallet
-        </button>
-      </div>
-
-      {/* View Barcode + Ticket Details */}
-      <div className="bg-white px-4 pb-4 flex items-center justify-center gap-10">
-        <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
-          View Barcode
-        </button>
-        <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
-          Ticket Details
-        </button>
-      </div>
-
-      {/* ticketmaster.verified badge */}
-      <div className="bg-white px-5 pb-5">
-        <div
-          className="py-3 rounded-xl flex items-center justify-center gap-2"
-          style={{ backgroundColor: '#0060FF' }}
-        >
-          <VerifiedIcon />
-          <span className="text-white text-sm font-medium">ticketmaster.verified</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+/* ------------------------------------------------------------------ */
+/*  Icons                                                              */
+/* ------------------------------------------------------------------ */
 function AppleWalletIcon() {
   return (
     <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="26" height="18" rx="3" fill="#1A1A1A" stroke="#333" strokeWidth="0.5"/>
-      <rect x="3" y="3" width="22" height="4" rx="1" fill="#FF3B30"/>
-      <rect x="3" y="7.5" width="22" height="4" rx="1" fill="#FF9500"/>
-      <rect x="3" y="12" width="22" height="4" rx="1" fill="#34C759"/>
+      <rect x="1" y="1" width="26" height="18" rx="3" fill="#1A1A1A" stroke="#333" strokeWidth="0.5" />
+      <rect x="3" y="3" width="22" height="4" rx="1" fill="#FF3B30" />
+      <rect x="3" y="7.5" width="22" height="4" rx="1" fill="#FF9500" />
+      <rect x="3" y="12" width="22" height="4" rx="1" fill="#34C759" />
+    </svg>
+  );
+}
+
+function BarcodeIcon() {
+  return (
+    <svg width="22" height="18" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="2" height="16" fill="white" />
+      <rect x="4" y="1" width="1" height="16" fill="white" />
+      <rect x="6" y="1" width="3" height="16" fill="white" />
+      <rect x="10" y="1" width="1" height="16" fill="white" />
+      <rect x="12" y="1" width="2" height="16" fill="white" />
+      <rect x="15" y="1" width="1" height="16" fill="white" />
+      <rect x="17" y="1" width="2" height="16" fill="white" />
+      <rect x="20" y="1" width="1" height="16" fill="white" />
     </svg>
   );
 }
@@ -354,13 +575,7 @@ function VerifiedIcon() {
         d="M9 0L11.1 2.4L14.1 1.8L14.4 4.8L17.1 6.3L15.6 9L17.1 11.7L14.4 13.2L14.1 16.2L11.1 15.6L9 18L6.9 15.6L3.9 16.2L3.6 13.2L0.9 11.7L2.4 9L0.9 6.3L3.6 4.8L3.9 1.8L6.9 2.4L9 0Z"
         fill="white"
       />
-      <path
-        d="M6 9L8 11L12 7"
-        stroke="#0060FF"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <path d="M6 9L8 11L12 7" stroke="#0060FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

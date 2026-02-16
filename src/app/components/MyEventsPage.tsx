@@ -9,21 +9,39 @@ export default function MyEventsPage() {
   const upcomingEvents = [
     {
       id: 1,
-      title: 'Beyonce live',
-      date: 'Mon dec 12 10am',
-      venue: 'PETCO park',
-      tickets: 1,
+      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
+      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      venue: 'Hollywood Bowl',
+      tickets: 4,
       image:
         'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     },
     {
       id: 2,
-      title: 'Chris brown: Breezy Bowl XX',
-      date: 'Wed, sep 24, 2025, 7:00 PM',
-      venue: 'Coors field',
+      title: 'Chris Brown: Breezy Bowl XX',
+      date: 'Sun, Sept 14, 7:00pm',
+      venue: 'SoFi Stadium',
       tickets: 3,
       image:
         'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    },
+    {
+      id: 3,
+      title: 'Lady Gaga: The MAYHEM Ball',
+      date: 'Thu, Sep 11, 2025, 8:00 PM',
+      venue: 'Scotiabank Arena',
+      tickets: 1,
+      image:
+        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
+    },
+    {
+      id: 4,
+      title: 'Harry Styles: Together, Together.',
+      date: 'Sat, Sep 05, 2026, 8:00 PM',
+      venue: 'Madison Square Garden',
+      tickets: 2,
+      image:
+        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
     },
   ];
 
