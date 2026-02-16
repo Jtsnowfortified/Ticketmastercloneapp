@@ -1,4 +1,4 @@
-import { Search, Heart, Ticket, Tag, User } from 'lucide-react';
+import { Ticket } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -32,9 +32,9 @@ export default function MyEventsPage() {
   const events = activeTab === 'upcoming' ? upcomingEvents : pastEvents;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header - White background with ticketmaster logo, matching real TM app */}
-      <header className="bg-white px-4 pt-3 pb-0">
+    <div className="min-h-screen bg-tm-bg flex flex-col">
+      {/* Header - ticketmaster logo matching real TM app */}
+      <header className="bg-tm-surface px-4 pt-3 pb-0">
         <div className="flex items-center justify-between mb-3">
           {/* Ticketmaster logo */}
           <div className="flex items-center gap-1.5">
@@ -43,16 +43,16 @@ export default function MyEventsPage() {
               style={{
                 fontFamily: "'Georgia', 'Times New Roman', serif",
                 fontStyle: 'italic',
-                color: '#026CDF',
+                color: 'var(--tm-blue)',
               }}
             >
               ticketmaster
             </span>
-            <span className="text-xs align-top" style={{ color: '#026CDF', fontFamily: 'serif' }}>
+            <span className="text-xs align-top" style={{ color: 'var(--tm-blue)', fontFamily: 'serif' }}>
               {'®'}
             </span>
             {/* US Flag icon */}
-            <div className="w-5 h-5 rounded-full overflow-hidden ml-0.5 flex-shrink-0 border border-gray-200">
+            <div className="w-5 h-5 rounded-full overflow-hidden ml-0.5 flex-shrink-0 border border-tm-border">
               <svg viewBox="0 0 32 32" className="w-full h-full">
                 <rect width="32" height="32" fill="#B22234" />
                 <rect width="32" height="2.46" y="2.46" fill="white" />
@@ -66,12 +66,12 @@ export default function MyEventsPage() {
             </div>
           </div>
           {/* Help button */}
-          <button className="text-black text-base font-medium">Help</button>
+          <button className="text-tm-text-primary text-base font-medium">Help</button>
         </div>
       </header>
 
       {/* Tabs - Upcoming / Past with blue indicator bar */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-tm-surface border-b border-tm-border">
         <div className="flex">
           <button
             onClick={() => setActiveTab('upcoming')}
@@ -79,16 +79,13 @@ export default function MyEventsPage() {
           >
             <span
               className={`text-base font-semibold ${
-                activeTab === 'upcoming' ? 'text-black' : 'text-gray-400'
+                activeTab === 'upcoming' ? 'text-tm-text-primary' : 'text-tm-text-muted'
               }`}
             >
               Upcoming
             </span>
             {activeTab === 'upcoming' && (
-              <div
-                className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full"
-                style={{ backgroundColor: '#026CDF' }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full bg-tm-blue" />
             )}
           </button>
           <button
@@ -97,31 +94,28 @@ export default function MyEventsPage() {
           >
             <span
               className={`text-base font-semibold ${
-                activeTab === 'past' ? 'text-black' : 'text-gray-400'
+                activeTab === 'past' ? 'text-tm-text-primary' : 'text-tm-text-muted'
               }`}
             >
               Past
             </span>
             {activeTab === 'past' && (
-              <div
-                className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full"
-                style={{ backgroundColor: '#026CDF' }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-t-full bg-tm-blue" />
             )}
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto pb-24 bg-gray-50">
+      <div className="flex-1 overflow-y-auto pb-24 bg-tm-bg">
         {events.length > 0 ? (
           <div className="flex flex-col gap-4 p-4">
             {events.map((event) => (
               <button
                 key={event.id}
                 onClick={() => navigate(`/my-tickets/${event.id}`)}
-                className="relative rounded-2xl overflow-hidden w-full text-left shadow-sm"
-                style={{ boxShadow: '0 1px 6px rgba(0,0,0,0.1)' }}
+                className="relative rounded-2xl overflow-hidden w-full text-left"
+                style={{ boxShadow: '0 1px 8px var(--tm-card-overlay)' }}
               >
                 {/* Event image - tall card */}
                 <div className="relative" style={{ height: '260px' }}>
@@ -141,7 +135,7 @@ export default function MyEventsPage() {
                       {event.date} {'\u00B7'} {event.venue}
                     </p>
                     <p className="text-white/80 text-sm mt-0.5">
-                      {event.tickets} {event.tickets === 1 ? 'tickets' : 'tickets'}
+                      {event.tickets} {event.tickets === 1 ? 'ticket' : 'tickets'}
                     </p>
                   </div>
                 </div>
@@ -150,57 +144,14 @@ export default function MyEventsPage() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-64 text-center px-6">
-            <Ticket size={48} className="text-gray-300 mb-4" />
-            <p className="text-gray-500 text-base font-medium">No past events</p>
-            <p className="text-gray-400 text-sm mt-1">
+            <Ticket size={48} className="text-tm-text-muted mb-4" />
+            <p className="text-tm-text-secondary text-base font-medium">No past events</p>
+            <p className="text-tm-text-muted text-sm mt-1">
               Events you've attended will show up here
             </p>
           </div>
         )}
       </div>
-
-      {/* Bottom Navigation - white bg matching real TM app */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 pt-2 pb-1">
-        <div className="flex items-center justify-around max-w-md mx-auto">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center gap-0.5 py-1 min-w-[60px]"
-          >
-            <Search size={22} className="text-gray-400" />
-            <span className="text-[10px] text-gray-400">Discover</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5 py-1 min-w-[60px]">
-            <Heart size={22} className="text-gray-400" />
-            <span className="text-[10px] text-gray-400">For You</span>
-          </button>
-          <button
-            onClick={() => navigate('/my-events')}
-            className="flex flex-col items-center gap-0.5 py-1 min-w-[60px]"
-          >
-            {/* My Events icon - matches TM's ticket/envelope style icon */}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#026CDF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2" />
-              <path d="M2 10h20" />
-              <path d="M12 4v6" />
-            </svg>
-            <span className="text-[10px] font-semibold" style={{ color: '#026CDF' }}>
-              My Events
-            </span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5 py-1 min-w-[60px]">
-            <Tag size={22} className="text-gray-400" />
-            <span className="text-[10px] text-gray-400">Sell</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5 py-1 min-w-[60px]">
-            <User size={22} className="text-gray-400" />
-            <span className="text-[10px] text-gray-400">My Account</span>
-          </button>
-        </div>
-        {/* Home Indicator */}
-        <div className="flex justify-center mt-1 pb-1">
-          <div className="w-32 h-1 bg-gray-300 rounded-full" />
-        </div>
-      </nav>
     </div>
   );
 }

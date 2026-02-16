@@ -1,6 +1,21 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Ticketmaster theme tokens */
+  --tm-bg: #F5F5F5;
+  --tm-surface: #FFFFFF;
+  --tm-surface-alt: #F0F0F0;
+  --tm-text-primary: #000000;
+  --tm-text-secondary: #666666;
+  --tm-text-muted: #999999;
+  --tm-border: rgba(0, 0, 0, 0.08);
+  --tm-blue: #026CDF;
+  --tm-nav-bg: #FFFFFF;
+  --tm-nav-border: rgba(0, 0, 0, 0.08);
+  --tm-search-bg: #EEEEEE;
+  --tm-card-overlay: rgba(0, 0, 0, 0.45);
+  --tm-splash-bg: #FFFFFF;
+
   --font-size: 16px;
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
@@ -42,6 +57,21 @@
 }
 
 .dark {
+  /* Ticketmaster dark mode tokens */
+  --tm-bg: #121212;
+  --tm-surface: #1C1C1E;
+  --tm-surface-alt: #2C2C2E;
+  --tm-text-primary: #FFFFFF;
+  --tm-text-secondary: #A0A0A0;
+  --tm-text-muted: #6B7280;
+  --tm-border: rgba(255, 255, 255, 0.1);
+  --tm-blue: #026CDF;
+  --tm-nav-bg: #1C1C1E;
+  --tm-nav-border: rgba(255, 255, 255, 0.1);
+  --tm-search-bg: #2C2C2E;
+  --tm-card-overlay: rgba(0, 0, 0, 0.55);
+  --tm-splash-bg: #121212;
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
@@ -79,6 +109,21 @@
 }
 
 @theme inline {
+  /* Ticketmaster tokens for Tailwind */
+  --color-tm-bg: var(--tm-bg);
+  --color-tm-surface: var(--tm-surface);
+  --color-tm-surface-alt: var(--tm-surface-alt);
+  --color-tm-text-primary: var(--tm-text-primary);
+  --color-tm-text-secondary: var(--tm-text-secondary);
+  --color-tm-text-muted: var(--tm-text-muted);
+  --color-tm-border: var(--tm-border);
+  --color-tm-blue: var(--tm-blue);
+  --color-tm-nav-bg: var(--tm-nav-bg);
+  --color-tm-nav-border: var(--tm-nav-border);
+  --color-tm-search-bg: var(--tm-search-bg);
+  --color-tm-card-overlay: var(--tm-card-overlay);
+  --color-tm-splash-bg: var(--tm-splash-bg);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

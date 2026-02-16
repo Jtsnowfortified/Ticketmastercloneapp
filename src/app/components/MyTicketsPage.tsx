@@ -148,28 +148,25 @@ export default function MyTicketsPage() {
   const currentTicket = tickets[activeTicketIndex];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#1B2636' }}>
-      {/* Header - matches Ticketmaster dark top bar */}
-      <header
-        className="flex items-center justify-between px-4"
-        style={{ backgroundColor: '#1B2636', paddingTop: '12px', paddingBottom: '12px' }}
-      >
+    <div className="min-h-screen flex flex-col bg-tm-surface-alt">
+      {/* Header - adapts to dark/light mode */}
+      <header className="flex items-center justify-between px-4 bg-tm-surface-alt py-3">
         <button
           onClick={() => navigate(-1)}
-          className="text-white p-1"
+          className="text-tm-text-primary p-1"
           aria-label="Close"
         >
           <X size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-white text-lg font-bold tracking-tight">My Tickets</h1>
-        <button className="text-white text-base font-medium">Help</button>
+        <h1 className="text-tm-text-primary text-lg font-bold tracking-tight">My Tickets</h1>
+        <button className="text-tm-text-primary text-base font-medium">Help</button>
       </header>
 
       {/* Thin blue accent line under header */}
       <div className="w-full h-[2px]" style={{ backgroundColor: '#0060FF' }} />
 
       {/* Main scrollable content */}
-      <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#1B2636' }}>
+      <div className="flex-1 overflow-y-auto bg-tm-surface-alt">
         <div className="px-4 pt-5 pb-4">
           {/* Horizontal ticket carousel */}
           <div
@@ -227,8 +224,8 @@ export default function MyTicketsPage() {
       </div>
 
       {/* Home Indicator */}
-      <div className="flex justify-center pb-2 pt-1" style={{ backgroundColor: '#1B2636' }}>
-        <div className="w-32 h-1 rounded-full" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+      <div className="flex justify-center pb-2 pt-1 bg-tm-surface-alt">
+        <div className="w-32 h-1 rounded-full bg-tm-text-muted/40" />
       </div>
     </div>
   );
