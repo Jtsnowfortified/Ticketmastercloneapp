@@ -525,6 +525,7 @@ export default function MyTicketsPage() {
         {/* Transfer / Sell buttons */}
         <div className="px-4 pb-4 pt-2 flex gap-3">
           <button
+            onClick={() => navigate(`/transfer/${eventId || '2'}`)}
             className="flex-1 rounded-lg font-bold text-white"
             style={{ backgroundColor: '#0060FF', fontSize: '14px', height: '46px' }}
           >
