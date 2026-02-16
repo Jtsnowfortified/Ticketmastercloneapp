@@ -224,11 +224,11 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="py-5 px-4 text-center">
-      <p className="text-tm-text-primary text-base font-semibold mb-4">
+    <div className="py-4 px-4 text-center">
+      <p className="text-tm-text-primary text-sm font-semibold mb-3">
         {'Ticket will be ready in:'}
       </p>
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-center gap-4">
         {[
           { val: timeLeft.days, label: 'DAY' },
           { val: timeLeft.hours, label: 'HOUR' },
@@ -236,10 +236,10 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
           { val: timeLeft.seconds, label: 'SECONDS' },
         ].map((u) => (
           <div key={u.label} className="flex flex-col items-center">
-            <span className="text-tm-text-primary text-4xl font-bold leading-none">
+            <span className="text-tm-text-primary text-2xl font-bold leading-none">
               {pad(u.val)}
             </span>
-            <span className="text-tm-text-muted text-[10px] font-semibold tracking-wider mt-1.5">
+            <span className="text-tm-text-muted text-[8px] font-semibold tracking-wider mt-1">
               {u.label}
             </span>
           </div>
@@ -256,50 +256,50 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
   return (
     <div className="rounded-2xl overflow-hidden mx-2 bg-tm-surface" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
       {/* Ticket Type Badge */}
-      <div className="relative py-2.5 text-center" style={{ backgroundColor: '#0060FF' }}>
-        <span className="text-white text-sm font-semibold tracking-wide">
+      <div className="relative py-2 text-center" style={{ backgroundColor: '#0060FF' }}>
+        <span className="text-white text-xs font-semibold tracking-wide">
           {ticket.ticketType}
         </span>
         <button className="absolute right-3 top-1/2 -translate-y-1/2" aria-label="Info">
-          <Info size={20} className="text-white/70" />
+          <Info size={16} className="text-white/70" />
         </button>
       </div>
 
       {/* SEC / ROW / SEAT */}
       {ticket.generalAdmission ? (
-        <div className="flex items-center justify-around py-5 px-4" style={{ backgroundColor: '#0060FF' }}>
+        <div className="flex items-center justify-around py-3.5 px-4" style={{ backgroundColor: '#0060FF' }}>
           <div className="text-center">
-            <div className="text-[10px] font-medium tracking-widest mb-1 text-white/55">SEC</div>
-            <div className="text-white text-3xl font-bold leading-none">{ticket.section}</div>
+            <div className="text-[9px] font-medium tracking-widest mb-0.5 text-white/55">SEC</div>
+            <div className="text-white text-xl font-bold leading-none">{ticket.section}</div>
           </div>
           <div className="text-center">
-            <div className="text-white text-2xl font-bold leading-none">{ticket.generalAdmission}</div>
+            <div className="text-white text-lg font-bold leading-none">{ticket.generalAdmission}</div>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-around py-5 px-4" style={{ backgroundColor: '#0060FF' }}>
+        <div className="flex items-center justify-around py-3.5 px-4" style={{ backgroundColor: '#0060FF' }}>
           {[
             { label: 'SEC', value: ticket.section },
             { label: 'ROW', value: ticket.row },
             { label: 'SEAT', value: ticket.seat },
           ].map((col) => (
             <div key={col.label} className="text-center flex-1">
-              <div className="text-[10px] font-medium tracking-widest mb-1 text-white/55">
+              <div className="text-[9px] font-medium tracking-widest mb-0.5 text-white/55">
                 {col.label}
               </div>
-              <div className="text-white text-4xl font-bold leading-none">{col.value}</div>
+              <div className="text-white text-2xl font-bold leading-none">{col.value}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Event Image */}
-      <div className="relative" style={{ height: '220px' }}>
+      <div className="relative" style={{ height: '190px' }}>
         <img src={ticket.image} alt={ticket.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5">
-          <h2 className="text-white text-xl font-bold mb-1.5 leading-tight">{ticket.title}</h2>
-          <p className="text-white/90 text-sm leading-snug">
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
+          <h2 className="text-white text-base font-bold mb-1 leading-snug">{ticket.title}</h2>
+          <p className="text-white/85 text-xs leading-snug">
             {ticket.date} {'\u00B7'} {ticket.venue}
           </p>
         </div>
@@ -309,8 +309,8 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
       <div className="bg-tm-surface">
         {/* Level label */}
         {ticket.levelLabel && (
-          <div className="pt-4 pb-2 text-center">
-            <p className="text-tm-text-primary text-base font-semibold">{ticket.levelLabel}</p>
+          <div className="pt-3 pb-1.5 text-center">
+            <p className="text-tm-text-primary text-sm font-semibold">{ticket.levelLabel}</p>
           </div>
         )}
 
@@ -321,8 +321,8 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Action: Add to Apple Wallet */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-5 pt-3 pb-3">
-            <button className="w-full bg-black text-white py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5">
+          <div className="px-5 pt-2.5 pb-2.5">
+            <button className="w-full bg-black text-white py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2">
               <AppleWalletIcon />
               {'Add to Apple Wallet'}
             </button>
@@ -331,9 +331,9 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Action: View Ticket */}
         {ticket.deliveryMethod === 'view' && (
-          <div className="px-5 pt-3 pb-3">
+          <div className="px-5 pt-2.5 pb-2.5">
             <button
-              className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2.5 text-white"
+              className="w-full py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 text-white"
               style={{ backgroundColor: '#0060FF' }}
             >
               <BarcodeIcon />
@@ -344,11 +344,11 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Links: View Barcode + Ticket Details */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-4 pb-3 flex items-center justify-center gap-10">
-            <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
+          <div className="px-4 pb-2.5 flex items-center justify-center gap-8">
+            <button className="text-xs font-semibold underline" style={{ color: '#0060FF' }}>
               View Barcode
             </button>
-            <button className="text-sm font-semibold underline" style={{ color: '#0060FF' }}>
+            <button className="text-xs font-semibold underline" style={{ color: '#0060FF' }}>
               Ticket Details
             </button>
           </div>
@@ -356,8 +356,8 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Ticket Details only (for view / countdown) */}
         {ticket.deliveryMethod !== 'wallet' && (
-          <div className="px-4 pb-3 text-center">
-            <button className="text-sm font-semibold" style={{ color: '#0060FF' }}>
+          <div className="px-4 pb-2.5 text-center">
+            <button className="text-xs font-semibold" style={{ color: '#0060FF' }}>
               Ticket Details
             </button>
           </div>
@@ -365,10 +365,10 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Verified badge (wallet tickets) */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-5 pb-5">
-            <div className="py-3 rounded-xl flex items-center justify-center gap-2" style={{ backgroundColor: '#0060FF' }}>
+          <div className="px-5 pb-4">
+            <div className="py-2.5 rounded-xl flex items-center justify-center gap-2" style={{ backgroundColor: '#0060FF' }}>
               <VerifiedIcon />
-              <span className="text-white text-sm font-medium">{'ticketmaster.verified'}</span>
+              <span className="text-white text-xs font-medium">{'ticketmaster.verified'}</span>
             </div>
           </div>
         )}
@@ -468,13 +468,13 @@ export default function MyTicketsPage() {
             {/* Transfer / Sell buttons */}
             <div className="px-4 pb-4 pt-2 flex gap-3">
               <button
-                className="flex-1 py-3.5 rounded-lg font-bold text-base text-white"
+                className="flex-1 py-3 rounded-lg font-bold text-sm text-white"
                 style={{ backgroundColor: '#0060FF' }}
               >
                 Transfer
               </button>
               <button
-                className="flex-1 py-3.5 rounded-lg font-bold text-base"
+                className="flex-1 py-3 rounded-lg font-bold text-sm"
                 style={{
                   backgroundColor: currentTicket.sellActive ? '#0060FF' : '#D1D5DB',
                   color: currentTicket.sellActive ? '#FFFFFF' : '#9CA3AF',
