@@ -1,4 +1,4 @@
-import { X, Info } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
@@ -7,36 +7,38 @@ import { useNavigate, useParams } from 'react-router';
 /* ------------------------------------------------------------------ */
 interface TicketData {
   ticketType: string;
+  ticketTypeColor: string; // text color of ticket type label
   section: string;
   row: string;
   seat: string;
-  generalAdmission?: string; // e.g. "General Admission" replaces ROW/SEAT
   title: string;
   date: string;
   venue: string;
+  venueLine2?: string; // second line under venue
   image: string;
-  levelLabel: string; // "Verified Fan Seller" | "Lower Level" | "Mobile" | "LOWER LEVEL"
-  deliveryMethod: 'wallet' | 'view' | 'countdown'; // determines card action
-  countdownTarget?: string; // ISO date for countdown
-  sellActive: boolean; // whether Sell button is blue or gray
-  mapQuery: string; // for static map embed
+  levelLabel: string;
+  deliveryMethod: 'wallet' | 'view' | 'countdown';
+  countdownTarget?: string;
+  sellActive: boolean;
+  mapQuery: string;
   venueName: string;
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock ticket data matching the real TM screenshots                  */
+/*  Mock ticket data matching the real TM screenshots exactly          */
 /* ------------------------------------------------------------------ */
-// TODO: Replace mock tickets array with real fetch from authenticated backend/user tickets API
 const eventTickets: Record<string, TicketData[]> = {
   '1': [
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: 'D',
       row: '7',
       seat: '1',
       title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      date: 'Sat, Nov 8, 2025 7:00 PM',
       venue: 'Hollywood Bowl',
+      venueLine2: 'Hollywood, CA',
       image:
         'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
       levelLabel: 'Verified Fan Seller',
@@ -47,12 +49,14 @@ const eventTickets: Record<string, TicketData[]> = {
     },
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: 'D',
       row: '7',
       seat: '2',
       title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      date: 'Sat, Nov 8, 2025 7:00 PM',
       venue: 'Hollywood Bowl',
+      venueLine2: 'Hollywood, CA',
       image:
         'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
       levelLabel: 'Verified Fan Seller',
@@ -63,12 +67,14 @@ const eventTickets: Record<string, TicketData[]> = {
     },
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: 'D',
       row: '7',
       seat: '3',
       title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      date: 'Sat, Nov 8, 2025 7:00 PM',
       venue: 'Hollywood Bowl',
+      venueLine2: 'Hollywood, CA',
       image:
         'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
       levelLabel: 'Verified Fan Seller',
@@ -79,12 +85,14 @@ const eventTickets: Record<string, TicketData[]> = {
     },
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: 'D',
       row: '7',
       seat: '4',
       title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025, 7:00 PM',
+      date: 'Sat, Nov 8, 2025 7:00 PM',
       venue: 'Hollywood Bowl',
+      venueLine2: 'Hollywood, CA',
       image:
         'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
       levelLabel: 'Verified Fan Seller',
@@ -96,57 +104,61 @@ const eventTickets: Record<string, TicketData[]> = {
   ],
   '2': [
     {
-      ticketType: 'Standard Tickets',
-      section: '124',
-      row: '15',
+      ticketType: 'Verified Resale Ticket',
+      ticketTypeColor: '#FFFFFF',
+      section: '114',
+      row: '25',
+      seat: '1',
+      title: 'Chris brown: Breezy Bowl XX',
+      date: 'Wed, sep 24, 2025, 7:00 PM',
+      venue: 'Coors field',
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Lower level',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Coors+Field+Denver+CO',
+      venueName: 'Coors Field',
+    },
+    {
+      ticketType: 'Verified Resale Ticket',
+      ticketTypeColor: '#FFFFFF',
+      section: '114',
+      row: '25',
+      seat: '3',
+      title: 'Chris brown: Breezy Bowl XX',
+      date: 'Wed, sep 24, 2025, 7:00 PM',
+      venue: 'Coors field',
+      image:
+        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      levelLabel: 'Lower level',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Coors+Field+Denver+CO',
+      venueName: 'Coors Field',
+    },
+    {
+      ticketType: 'Verified Resale Ticket',
+      ticketTypeColor: '#FFFFFF',
+      section: '114',
+      row: '25',
       seat: '5',
-      title: 'Chris Brown: Breezy Bowl XX',
-      date: 'Sun, Sept 14, 7:00pm',
-      venue: 'SoFi Stadium',
+      title: 'Chris brown: Breezy Bowl XX',
+      date: 'Wed, sep 24, 2025, 7:00 PM',
+      venue: 'Coors field',
       image:
         'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'LOWER LEVEL',
-      deliveryMethod: 'view',
-      sellActive: true,
-      mapQuery: 'SoFi+Stadium+Inglewood+CA',
-      venueName: 'SoFi Stadium',
-    },
-    {
-      ticketType: 'Standard Tickets',
-      section: '124',
-      row: '15',
-      seat: '6',
-      title: 'Chris Brown: Breezy Bowl XX',
-      date: 'Sun, Sept 14, 7:00pm',
-      venue: 'SoFi Stadium',
-      image:
-        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'LOWER LEVEL',
-      deliveryMethod: 'view',
-      sellActive: true,
-      mapQuery: 'SoFi+Stadium+Inglewood+CA',
-      venueName: 'SoFi Stadium',
-    },
-    {
-      ticketType: 'Standard Tickets',
-      section: '124',
-      row: '15',
-      seat: '7',
-      title: 'Chris Brown: Breezy Bowl XX',
-      date: 'Sun, Sept 14, 7:00pm',
-      venue: 'SoFi Stadium',
-      image:
-        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'LOWER LEVEL',
-      deliveryMethod: 'view',
-      sellActive: true,
-      mapQuery: 'SoFi+Stadium+Inglewood+CA',
-      venueName: 'SoFi Stadium',
+      levelLabel: 'Lower level',
+      deliveryMethod: 'wallet',
+      sellActive: false,
+      mapQuery: 'Coors+Field+Denver+CO',
+      venueName: 'Coors Field',
     },
   ],
   '3': [
     {
       ticketType: 'General Sale',
+      ticketTypeColor: '#FFFFFF',
       section: '248',
       row: '11',
       seat: '18',
@@ -166,6 +178,7 @@ const eventTickets: Record<string, TicketData[]> = {
   '4': [
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: '221',
       row: '13',
       seat: '21',
@@ -182,6 +195,7 @@ const eventTickets: Record<string, TicketData[]> = {
     },
     {
       ticketType: 'Artist Presale',
+      ticketTypeColor: '#4ADE80',
       section: '221',
       row: '13',
       seat: '22',
@@ -224,11 +238,11 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="py-4 px-4 text-center">
-      <p className="text-tm-text-primary text-sm font-semibold mb-3">
+    <div className="py-4 px-6 text-center">
+      <p className="text-tm-text-primary font-semibold mb-4" style={{ fontSize: '15px' }}>
         {'Ticket will be ready in:'}
       </p>
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-start justify-center gap-5">
         {[
           { val: timeLeft.days, label: 'DAY' },
           { val: timeLeft.hours, label: 'HOUR' },
@@ -236,10 +250,10 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
           { val: timeLeft.seconds, label: 'SECONDS' },
         ].map((u) => (
           <div key={u.label} className="flex flex-col items-center">
-            <span className="text-tm-text-primary text-2xl font-bold leading-none">
+            <span className="text-tm-text-primary font-bold leading-none" style={{ fontSize: '28px' }}>
               {pad(u.val)}
             </span>
-            <span className="text-tm-text-muted text-[8px] font-semibold tracking-wider mt-1">
+            <span className="text-tm-text-muted font-semibold tracking-wider mt-1.5" style={{ fontSize: '9px' }}>
               {u.label}
             </span>
           </div>
@@ -254,54 +268,72 @@ function CountdownTimer({ targetDate }: { targetDate: string }) {
 /* ------------------------------------------------------------------ */
 function TicketCard({ ticket }: { ticket: TicketData }) {
   return (
-    <div className="rounded-2xl overflow-hidden mx-2 bg-tm-surface" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}>
+    <div
+      className="rounded-xl overflow-hidden mx-4 bg-tm-surface"
+      style={{ boxShadow: '0 2px 16px rgba(0,0,0,0.12)' }}
+    >
       {/* Ticket Type Badge */}
       <div className="relative py-2 text-center" style={{ backgroundColor: '#0060FF' }}>
-        <span className="text-white text-xs font-semibold tracking-wide">
+        <span
+          className="font-semibold tracking-wide"
+          style={{ color: ticket.ticketTypeColor, fontSize: '13px' }}
+        >
           {ticket.ticketType}
         </span>
+        {/* Info icon */}
         <button className="absolute right-3 top-1/2 -translate-y-1/2" aria-label="Info">
-          <Info size={16} className="text-white/70" />
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="9" stroke="white" strokeOpacity="0.7" strokeWidth="1.5" fill="none" />
+            <text x="10" y="14.5" textAnchor="middle" fill="white" fillOpacity="0.7" fontSize="12" fontWeight="600" fontFamily="serif" fontStyle="italic">i</text>
+          </svg>
         </button>
       </div>
 
       {/* SEC / ROW / SEAT */}
-      {ticket.generalAdmission ? (
-        <div className="flex items-center justify-around py-3.5 px-4" style={{ backgroundColor: '#0060FF' }}>
-          <div className="text-center">
-            <div className="text-[9px] font-medium tracking-widest mb-0.5 text-white/55">SEC</div>
-            <div className="text-white text-xl font-bold leading-none">{ticket.section}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-white text-lg font-bold leading-none">{ticket.generalAdmission}</div>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center justify-around py-3.5 px-4" style={{ backgroundColor: '#0060FF' }}>
-          {[
-            { label: 'SEC', value: ticket.section },
-            { label: 'ROW', value: ticket.row },
-            { label: 'SEAT', value: ticket.seat },
-          ].map((col) => (
-            <div key={col.label} className="text-center flex-1">
-              <div className="text-[9px] font-medium tracking-widest mb-0.5 text-white/55">
-                {col.label}
-              </div>
-              <div className="text-white text-2xl font-bold leading-none">{col.value}</div>
+      <div className="flex items-center justify-around py-3 px-4" style={{ backgroundColor: '#0060FF' }}>
+        {[
+          { label: 'SEC', value: ticket.section },
+          { label: 'ROW', value: ticket.row },
+          { label: 'SEAT', value: ticket.seat },
+        ].map((col) => (
+          <div key={col.label} className="text-center flex-1">
+            <div
+              className="font-medium tracking-widest text-white/60 uppercase"
+              style={{ fontSize: '10px', marginBottom: '2px' }}
+            >
+              {col.label}
             </div>
-          ))}
-        </div>
-      )}
+            <div className="text-white font-bold leading-none" style={{ fontSize: '24px' }}>
+              {col.value}
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* Event Image */}
-      <div className="relative" style={{ height: '190px' }}>
-        <img src={ticket.image} alt={ticket.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Event Image with text overlay */}
+      <div className="relative" style={{ height: '200px' }}>
+        <img
+          src={ticket.image}
+          alt={ticket.title}
+          className="w-full h-full object-cover"
+          crossOrigin="anonymous"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
-          <h2 className="text-white text-base font-bold mb-1 leading-snug">{ticket.title}</h2>
-          <p className="text-white/85 text-xs leading-snug">
+          <h2
+            className="text-white font-bold leading-tight mb-1"
+            style={{ fontSize: '17px' }}
+          >
+            {ticket.title}
+          </h2>
+          <p className="text-white/80 leading-snug" style={{ fontSize: '12px' }}>
             {ticket.date} {'\u00B7'} {ticket.venue}
           </p>
+          {ticket.venueLine2 && (
+            <p className="text-white/70 text-center" style={{ fontSize: '12px' }}>
+              {ticket.venueLine2}
+            </p>
+          )}
         </div>
       </div>
 
@@ -309,8 +341,10 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
       <div className="bg-tm-surface">
         {/* Level label */}
         {ticket.levelLabel && (
-          <div className="pt-3 pb-1.5 text-center">
-            <p className="text-tm-text-primary text-sm font-semibold">{ticket.levelLabel}</p>
+          <div className="pt-3 pb-1 text-center">
+            <p className="text-tm-text-primary" style={{ fontSize: '13px', fontStyle: 'italic' }}>
+              {ticket.levelLabel}
+            </p>
           </div>
         )}
 
@@ -319,36 +353,54 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
           <CountdownTimer targetDate={ticket.countdownTarget} />
         )}
 
-        {/* Action: Add to Apple Wallet */}
+        {/* Action: Add to Apple Wallet -- uses real Apple Wallet icon image */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-5 pt-2.5 pb-2.5">
-            <button className="w-full bg-black text-white py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2">
-              <AppleWalletIcon />
-              {'Add to Apple Wallet'}
+          <div className="px-5 pt-2 pb-2">
+            <button
+              className="w-full bg-black text-white rounded-lg flex items-center justify-center gap-2"
+              style={{ height: '44px' }}
+            >
+              <img
+                src="/images/apple-wallet-icon.jpg"
+                alt="Apple Wallet"
+                className="rounded"
+                style={{ width: '26px', height: '26px' }}
+              />
+              <span className="font-semibold" style={{ fontSize: '14px' }}>
+                {'Add to Apple Wallet'}
+              </span>
             </button>
           </div>
         )}
 
         {/* Action: View Ticket */}
         {ticket.deliveryMethod === 'view' && (
-          <div className="px-5 pt-2.5 pb-2.5">
+          <div className="px-5 pt-2 pb-2">
             <button
-              className="w-full py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 text-white"
-              style={{ backgroundColor: '#0060FF' }}
+              className="w-full rounded-lg flex items-center justify-center gap-2 text-white"
+              style={{ backgroundColor: '#0060FF', height: '44px' }}
             >
               <BarcodeIcon />
-              {'View Ticket'}
+              <span className="font-semibold" style={{ fontSize: '14px' }}>
+                {'View Ticket'}
+              </span>
             </button>
           </div>
         )}
 
         {/* Links: View Barcode + Ticket Details */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-4 pb-2.5 flex items-center justify-center gap-8">
-            <button className="text-xs font-semibold underline" style={{ color: '#0060FF' }}>
+          <div className="px-4 pb-2 flex items-center justify-center gap-10 pt-1">
+            <button
+              className="font-semibold"
+              style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}
+            >
               View Barcode
             </button>
-            <button className="text-xs font-semibold underline" style={{ color: '#0060FF' }}>
+            <button
+              className="font-semibold"
+              style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}
+            >
               Ticket Details
             </button>
           </div>
@@ -356,19 +408,27 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 
         {/* Ticket Details only (for view / countdown) */}
         {ticket.deliveryMethod !== 'wallet' && (
-          <div className="px-4 pb-2.5 text-center">
-            <button className="text-xs font-semibold" style={{ color: '#0060FF' }}>
+          <div className="px-4 pb-2 text-center pt-1">
+            <button
+              className="font-semibold"
+              style={{ color: '#0060FF', fontSize: '13px' }}
+            >
               Ticket Details
             </button>
           </div>
         )}
 
-        {/* Verified badge (wallet tickets) */}
+        {/* Verified badge */}
         {ticket.deliveryMethod === 'wallet' && (
-          <div className="px-5 pb-4">
-            <div className="py-2.5 rounded-xl flex items-center justify-center gap-2" style={{ backgroundColor: '#0060FF' }}>
+          <div className="px-5 pt-1 pb-4">
+            <div
+              className="rounded-lg flex items-center justify-center gap-2"
+              style={{ backgroundColor: '#0060FF', height: '40px' }}
+            >
               <VerifiedIcon />
-              <span className="text-white text-xs font-medium">{'ticketmaster.verified'}</span>
+              <span className="text-white font-medium" style={{ fontSize: '13px', fontStyle: 'italic' }}>
+                {'ticketmaster.verified'}
+              </span>
             </div>
           </div>
         )}
@@ -407,99 +467,110 @@ export default function MyTicketsPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-tm-surface">
+    <div className="min-h-screen flex flex-col bg-tm-surface-alt">
       {/* Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-tm-surface">
+      <header className="flex items-center justify-between px-4 bg-tm-surface-alt" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
         <button onClick={() => navigate(-1)} className="text-tm-text-primary p-1" aria-label="Close">
-          <X size={24} strokeWidth={2.5} />
+          <X size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-tm-text-primary text-lg font-bold tracking-tight">My Tickets</h1>
-        <button className="text-tm-text-primary text-base font-medium">Help</button>
+        <h1 className="text-tm-text-primary font-bold" style={{ fontSize: '16px' }}>My Tickets</h1>
+        <button className="text-tm-text-primary font-medium" style={{ fontSize: '15px' }}>Help</button>
       </header>
 
       {/* MY TICKETS tab indicator */}
       <div className="bg-tm-surface border-b border-tm-border">
-        <div className="text-center py-3 text-sm font-bold tracking-wide text-tm-text-primary border-b-[3px] border-[#0060FF]">
+        <div
+          className="text-center font-bold tracking-wide text-tm-text-primary border-b-[3px] border-[#0060FF]"
+          style={{ fontSize: '12px', paddingTop: '10px', paddingBottom: '10px' }}
+        >
           MY TICKETS {tickets.length}
         </div>
       </div>
 
       {/* Main scrollable */}
       <div className="flex-1 overflow-y-auto bg-tm-bg">
-            <div className="pt-5 pb-2">
-              {/* Ticket Carousel */}
-              <div
-                ref={scrollRef}
-                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-              >
-                {tickets.map((ticket, i) => (
-                  <div key={i} className="flex-shrink-0 w-full snap-center">
-                    <TicketCard ticket={ticket} />
-                  </div>
-                ))}
+        <div className="pt-4 pb-2">
+          {/* Ticket Carousel */}
+          <div
+            ref={scrollRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+          >
+            {tickets.map((ticket, i) => (
+              <div key={i} className="flex-shrink-0 w-full snap-center">
+                <TicketCard ticket={ticket} />
               </div>
+            ))}
+          </div>
 
-              {/* Pagination dots */}
-              {tickets.length > 1 && (
-                <div className="flex justify-center gap-2 mt-4">
-                  {tickets.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => scrollToTicket(i)}
-                      className="w-2 h-2 rounded-full transition-colors"
-                      style={{ backgroundColor: i === activeTicketIndex ? '#0060FF' : '#C4C4C4' }}
-                      aria-label={`Go to ticket ${i + 1}`}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* "How Do I Manage My Tickets?" link */}
-              {currentTicket.deliveryMethod === 'countdown' && (
-                <div className="text-center mt-3 mb-1">
-                  <button className="text-sm font-semibold" style={{ color: '#0060FF' }}>
-                    {'How Do I Manage My Tickets?'}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Transfer / Sell buttons */}
-            <div className="px-4 pb-4 pt-2 flex gap-3">
-              <button
-                className="flex-1 py-3 rounded-lg font-bold text-sm text-white"
-                style={{ backgroundColor: '#0060FF' }}
-              >
-                Transfer
-              </button>
-              <button
-                className="flex-1 py-3 rounded-lg font-bold text-sm"
-                style={{
-                  backgroundColor: currentTicket.sellActive ? '#0060FF' : '#D1D5DB',
-                  color: currentTicket.sellActive ? '#FFFFFF' : '#9CA3AF',
-                }}
-              >
-                Sell
-              </button>
-            </div>
-
-            {/* Static Map Preview */}
-            <div className="px-0 pb-6">
-              <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
-                <iframe
-                  title={`Map of ${currentTicket.venueName}`}
-                  src={`https://maps.google.com/maps?q=${currentTicket.mapQuery}&z=15&output=embed`}
-                  className="w-full h-full border-0"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  style={{ pointerEvents: 'none' }}
+          {/* Pagination dots */}
+          {tickets.length > 1 && (
+            <div className="flex justify-center gap-1.5 mt-3">
+              {tickets.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => scrollToTicket(i)}
+                  className="rounded-full transition-colors"
+                  style={{
+                    width: '7px',
+                    height: '7px',
+                    backgroundColor: i === activeTicketIndex ? '#0060FF' : '#C4C4C4',
+                  }}
+                  aria-label={`Go to ticket ${i + 1}`}
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-tm-surface px-3 py-2">
-                  <p className="text-tm-text-primary text-sm font-bold">{currentTicket.venueName}</p>
-                </div>
-              </div>
+              ))}
             </div>
+          )}
+
+          {/* "How Do I Manage My Tickets?" link (for countdown) */}
+          {currentTicket.deliveryMethod === 'countdown' && (
+            <div className="text-center mt-3 mb-1">
+              <button className="font-semibold" style={{ color: '#0060FF', fontSize: '13px' }}>
+                {'How Do I Manage My Tickets?'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Transfer / Sell buttons */}
+        <div className="px-4 pb-4 pt-2 flex gap-3">
+          <button
+            className="flex-1 rounded-lg font-bold text-white"
+            style={{ backgroundColor: '#0060FF', fontSize: '14px', height: '46px' }}
+          >
+            Transfer
+          </button>
+          <button
+            className="flex-1 rounded-lg font-bold"
+            style={{
+              backgroundColor: currentTicket.sellActive ? '#0060FF' : '#D1D5DB',
+              color: currentTicket.sellActive ? '#FFFFFF' : '#9CA3AF',
+              fontSize: '14px',
+              height: '46px',
+            }}
+          >
+            Sell
+          </button>
+        </div>
+
+        {/* Static Map Preview */}
+        <div className="px-0 pb-6">
+          <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
+            <iframe
+              title={`Map of ${currentTicket.venueName}`}
+              src={`https://maps.google.com/maps?q=${currentTicket.mapQuery}&z=15&output=embed`}
+              className="w-full h-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              style={{ pointerEvents: 'none' }}
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-tm-surface px-3 py-2">
+              <p className="text-tm-text-primary font-bold" style={{ fontSize: '13px' }}>
+                {currentTicket.venueName}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Home Indicator */}
@@ -513,20 +584,9 @@ export default function MyTicketsPage() {
 /* ------------------------------------------------------------------ */
 /*  Icons                                                              */
 /* ------------------------------------------------------------------ */
-function AppleWalletIcon() {
-  return (
-    <svg width="28" height="20" viewBox="0 0 28 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="26" height="18" rx="3" fill="#1A1A1A" stroke="#333" strokeWidth="0.5" />
-      <rect x="3" y="3" width="22" height="4" rx="1" fill="#FF3B30" />
-      <rect x="3" y="7.5" width="22" height="4" rx="1" fill="#FF9500" />
-      <rect x="3" y="12" width="22" height="4" rx="1" fill="#34C759" />
-    </svg>
-  );
-}
-
 function BarcodeIcon() {
   return (
-    <svg width="22" height="18" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="16" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect x="1" y="1" width="2" height="16" fill="white" />
       <rect x="4" y="1" width="1" height="16" fill="white" />
       <rect x="6" y="1" width="3" height="16" fill="white" />
@@ -541,7 +601,7 @@ function BarcodeIcon() {
 
 function VerifiedIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
         d="M9 0L11.1 2.4L14.1 1.8L14.4 4.8L17.1 6.3L15.6 9L17.1 11.7L14.4 13.2L14.1 16.2L11.1 15.6L9 18L6.9 15.6L3.9 16.2L3.6 13.2L0.9 11.7L2.4 9L0.9 6.3L3.6 4.8L3.9 1.8L6.9 2.4L9 0Z"
         fill="white"
