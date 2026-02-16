@@ -468,24 +468,14 @@ export default function MyTicketsPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-tm-surface-alt">
-      {/* Header */}
-      <header className="flex items-center justify-between px-4 bg-tm-surface-alt" style={{ paddingTop: '10px', paddingBottom: '10px' }}>
-        <button onClick={() => navigate(-1)} className="text-tm-text-primary p-1" aria-label="Close">
+      {/* Header - blue background matching real TM app */}
+      <header className="flex items-center justify-between px-4" style={{ backgroundColor: '#0060FF', paddingTop: '10px', paddingBottom: '10px' }}>
+        <button onClick={() => navigate(-1)} className="text-white p-1" aria-label="Close">
           <X size={22} strokeWidth={2.5} />
         </button>
-        <h1 className="text-tm-text-primary font-bold" style={{ fontSize: '16px' }}>My Tickets</h1>
-        <button className="text-tm-text-primary font-medium" style={{ fontSize: '15px' }}>Help</button>
+        <h1 className="text-white font-bold" style={{ fontSize: '16px' }}>My Tickets</h1>
+        <button className="text-white font-medium" style={{ fontSize: '15px' }}>Help</button>
       </header>
-
-      {/* MY TICKETS tab indicator */}
-      <div className="bg-tm-surface border-b border-tm-border">
-        <div
-          className="text-center font-bold tracking-wide text-tm-text-primary border-b-[3px] border-[#0060FF]"
-          style={{ fontSize: '12px', paddingTop: '10px', paddingBottom: '10px' }}
-        >
-          MY TICKETS {tickets.length}
-        </div>
-      </div>
 
       {/* Main scrollable */}
       <div className="flex-1 overflow-y-auto bg-tm-bg">
