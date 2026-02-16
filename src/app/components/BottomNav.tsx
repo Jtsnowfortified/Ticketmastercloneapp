@@ -63,21 +63,21 @@ export default function BottomNav({ activePage }: BottomNavProps) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-tm-nav-bg border-t border-tm-nav-border px-2 pt-2 pb-1 z-50">
-      <div className="flex items-center justify-around max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-tm-nav-bg border-t border-tm-nav-border pt-1.5 pb-0 z-50">
+      <div className="flex items-stretch max-w-md mx-auto">
         {tabs.map((tab) => {
           const isActive = activePage === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => navigate(tab.route)}
-              className={`flex flex-col items-center gap-0.5 py-1 min-w-[60px] transition-colors ${
+              className={`flex-1 flex flex-col items-center gap-0.5 py-1 transition-colors ${
                 isActive ? 'text-tm-blue' : 'text-tm-text-muted'
               }`}
             >
-              {tab.key === 'my-events' ? tab.icon : tab.icon}
+              {tab.icon}
               <span
-                className={`text-[10px] ${isActive ? 'font-semibold text-tm-blue' : 'text-tm-text-muted'}`}
+                className={`text-[10px] leading-tight whitespace-nowrap ${isActive ? 'font-semibold text-tm-blue' : 'text-tm-text-muted'}`}
               >
                 {tab.label}
               </span>
@@ -86,7 +86,7 @@ export default function BottomNav({ activePage }: BottomNavProps) {
         })}
       </div>
       {/* Home Indicator */}
-      <div className="flex justify-center mt-1.5 pb-1">
+      <div className="flex justify-center mt-1 pb-1.5">
         <div className="w-32 h-1 rounded-full bg-tm-text-muted/40" />
       </div>
     </nav>
