@@ -385,7 +385,6 @@ export default function MyTicketsPage() {
   const { eventId } = useParams();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'tickets' | 'addons'>('tickets');
 
   const tickets = eventTickets[eventId || '2'] || eventTickets['2'];
   const currentTicket = tickets[0];
@@ -418,34 +417,15 @@ export default function MyTicketsPage() {
         <button className="text-tm-text-primary text-base font-medium">Help</button>
       </header>
 
-      {/* MY TICKETS / ADD-ONS tabs */}
-      <div className="flex bg-tm-surface border-b border-tm-border">
-        <button
-          onClick={() => setActiveTab('tickets')}
-          className={`flex-1 text-center py-3 text-sm font-bold tracking-wide transition-colors ${
-            activeTab === 'tickets'
-              ? 'text-tm-text-primary border-b-[3px] border-[#0060FF]'
-              : 'text-tm-text-muted border-b-[3px] border-transparent'
-          }`}
-        >
+      {/* MY TICKETS tab indicator */}
+      <div className="bg-tm-surface border-b border-tm-border">
+        <div className="text-center py-3 text-sm font-bold tracking-wide text-tm-text-primary border-b-[3px] border-[#0060FF]">
           MY TICKETS {tickets.length}
-        </button>
-        <button
-          onClick={() => setActiveTab('addons')}
-          className={`flex-1 text-center py-3 text-sm font-bold tracking-wide transition-colors ${
-            activeTab === 'addons'
-              ? 'text-tm-text-primary border-b-[3px] border-[#0060FF]'
-              : 'text-tm-text-muted border-b-[3px] border-transparent'
-          }`}
-        >
-          ADD-ONS
-        </button>
+        </div>
       </div>
 
       {/* Main scrollable */}
       <div className="flex-1 overflow-y-auto bg-tm-bg">
-        {activeTab === 'tickets' ? (
-          <>
             <div className="pt-5 pb-2">
               {/* Ticket Carousel */}
               <div
@@ -520,15 +500,6 @@ export default function MyTicketsPage() {
                 </div>
               </div>
             </div>
-          </>
-        ) : (
-          /* ADD-ONS empty state */
-          <div className="flex flex-col items-center justify-center py-20 px-6">
-            <p className="text-tm-text-muted text-base text-center">
-              No add-ons available for this event.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Home Indicator */}
