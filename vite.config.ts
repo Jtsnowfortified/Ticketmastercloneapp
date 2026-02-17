@@ -11,6 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
+      devOptions: { enabled: true }, // NEW: enables manifest in dev
       manifest: {
         name: 'Ticketmaster',
         short_name: 'Ticketmaster',
