@@ -25,11 +25,15 @@ interface TicketData {
 }
 
 /* ------------------------------------------------------------------ */
-// ====================== REAL DATA FROM SUPABASE ======================
+//// ====================== REAL DATA FROM SUPABASE ======================
 const [tickets, setTickets] = useState<TicketData[]>([])
+const [loading, setLoading] = useState(true)
 
 useEffect(() => {
   async function fetchTickets() {
+    setLoading(true)
+    console.log('🔄 Fetching tickets from Supabase...')   // ← Debug log
+
     const { data, error } = await supabase
       .from('tickets')
       .select('*')
@@ -38,6 +42,8 @@ useEffect(() => {
     if (error) {
       console.error('Supabase error:', error)
     } else {
+      console.log('✅ Tickets loaded from Supabase:', data)   // ← Debug log
+
       const mappedTickets: TicketData[] = (data || []).map((t: any) => ({
         ticketType: t.type || 'Standard Tickets',
         ticketTypeColor: '#4ADE80',
@@ -58,6 +64,7 @@ useEffect(() => {
 
       setTickets(mappedTickets)
     }
+    setLoading(false)
   }
 
   fetchTickets()
@@ -295,7 +302,7 @@ export default function MyTicketsPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
 
-  const currentTicket = tickets[0] || {} as TicketData;
+  const currentTicket = tickets[0] || ({} as TicketData);
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
