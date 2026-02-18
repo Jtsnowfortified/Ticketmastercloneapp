@@ -1,20 +1,27 @@
 import { X } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import useSWR from 'swr';
+import {
+  fetchEventById,
+  fetchTicketsForEvent,
+  type DbEvent,
+  type DbTicket,
+} from '../services/supabaseClient';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
 interface TicketData {
   ticketType: string;
-  ticketTypeColor: string; // text color of ticket type label
+  ticketTypeColor: string;
   section: string;
   row: string;
   seat: string;
   title: string;
   date: string;
   venue: string;
-  venueLine2?: string; // second line under venue
+  venueLine2?: string;
   image: string;
   levelLabel: string;
   deliveryMethod: 'wallet' | 'view' | 'countdown';
@@ -25,7 +32,31 @@ interface TicketData {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock ticket data matching the real TM screenshots exactly          */
+/*  DB -> TicketData mapper                                            */
+/* ------------------------------------------------------------------ */
+function mapDbToTicketData(event: DbEvent, ticket: DbTicket): TicketData {
+  return {
+    ticketType: ticket.ticket_type,
+    ticketTypeColor: ticket.ticket_type_color,
+    section: ticket.section,
+    row: ticket.row,
+    seat: ticket.seat,
+    title: event.title,
+    date: event.date,
+    venue: event.venue,
+    venueLine2: event.venue_line2 || undefined,
+    image: event.image,
+    levelLabel: ticket.level_label || '',
+    deliveryMethod: ticket.delivery_method,
+    countdownTarget: ticket.countdown_target || undefined,
+    sellActive: ticket.sell_active,
+    mapQuery: event.map_query,
+    venueName: event.venue_name,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Fallback hardcoded data                                            */
 /* ------------------------------------------------------------------ */
 const eventTickets: Record<string, TicketData[]> = {
   '1': [
@@ -214,6 +245,18 @@ const eventTickets: Record<string, TicketData[]> = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  SWR fetcher: fetch event + tickets and map to TicketData[]         */
+/* ------------------------------------------------------------------ */
+async function fetchTicketDataForEvent(eventId: string): Promise<TicketData[] | null> {
+  const [event, tickets] = await Promise.all([
+    fetchEventById(eventId),
+    fetchTicketsForEvent(eventId),
+  ]);
+  if (!event || !tickets || tickets.length === 0) return null;
+  return tickets.map((t) => mapDbToTicketData(event, t));
+}
+
+/* ------------------------------------------------------------------ */
 /*  Countdown Timer                                                    */
 /* ------------------------------------------------------------------ */
 function CountdownTimer({ targetDate }: { targetDate: string }) {
@@ -280,7 +323,6 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
         >
           {ticket.ticketType}
         </span>
-        {/* Info icon */}
         <button className="absolute right-3 top-1/2 -translate-y-1/2" aria-label="Info">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="10" cy="10" r="9" stroke="white" strokeOpacity="0.7" strokeWidth="1.5" fill="none" />
@@ -297,10 +339,7 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
           { label: 'SEAT', value: ticket.seat },
         ].map((col) => (
           <div key={col.label} className="text-center flex-1">
-            <div
-              className="font-medium tracking-widest text-white/60 uppercase"
-              style={{ fontSize: '10px', marginBottom: '2px' }}
-            >
+            <div className="font-medium tracking-widest text-white/60 uppercase" style={{ fontSize: '10px', marginBottom: '2px' }}>
               {col.label}
             </div>
             <div className="text-white font-bold leading-none" style={{ fontSize: '24px' }}>
@@ -310,20 +349,12 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
         ))}
       </div>
 
-      {/* Event Image with text overlay */}
+      {/* Event Image */}
       <div className="relative" style={{ height: '200px' }}>
-        <img
-          src={ticket.image}
-          alt={ticket.title}
-          className="w-full h-full object-cover"
-          crossOrigin="anonymous"
-        />
+        <img src={ticket.image} alt={ticket.title} className="w-full h-full object-cover" crossOrigin="anonymous" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 px-4 pb-4">
-          <h2
-            className="text-white font-bold leading-tight mb-1"
-            style={{ fontSize: '17px' }}
-          >
+          <h2 className="text-white font-bold leading-tight mb-1" style={{ fontSize: '17px' }}>
             {ticket.title}
           </h2>
           <p className="text-white/80 leading-snug" style={{ fontSize: '12px' }}>
@@ -337,9 +368,8 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
         </div>
       </div>
 
-      {/* White content section below image */}
+      {/* White content section */}
       <div className="bg-tm-surface">
-        {/* Level label */}
         {ticket.levelLabel && (
           <div className="pt-3 pb-1 text-center">
             <p className="text-tm-text-primary" style={{ fontSize: '13px', fontStyle: 'italic' }}>
@@ -348,87 +378,46 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
           </div>
         )}
 
-        {/* Countdown (only for countdown delivery) */}
         {ticket.deliveryMethod === 'countdown' && ticket.countdownTarget && (
           <CountdownTimer targetDate={ticket.countdownTarget} />
         )}
 
-        {/* Action: Add to Apple Wallet -- uses real Apple Wallet icon image */}
         {ticket.deliveryMethod === 'wallet' && (
           <div className="px-5 pt-2 pb-2">
-            <button
-              className="w-full bg-black text-white rounded-lg flex items-center justify-center gap-2"
-              style={{ height: '44px' }}
-            >
-              <img
-                src="/images/apple-wallet-icon.jpg"
-                alt="Apple Wallet"
-                className="rounded"
-                style={{ width: '26px', height: '26px' }}
-              />
-              <span className="font-semibold" style={{ fontSize: '14px' }}>
-                {'Add to Apple Wallet'}
-              </span>
+            <button className="w-full bg-black text-white rounded-lg flex items-center justify-center gap-2" style={{ height: '44px' }}>
+              <img src="/images/apple-wallet-icon.jpg" alt="Apple Wallet" className="rounded" style={{ width: '26px', height: '26px' }} />
+              <span className="font-semibold" style={{ fontSize: '14px' }}>{'Add to Apple Wallet'}</span>
             </button>
           </div>
         )}
 
-        {/* Action: View Ticket */}
         {ticket.deliveryMethod === 'view' && (
           <div className="px-5 pt-2 pb-2">
-            <button
-              className="w-full rounded-lg flex items-center justify-center gap-2 text-white"
-              style={{ backgroundColor: '#0060FF', height: '44px' }}
-            >
+            <button className="w-full rounded-lg flex items-center justify-center gap-2 text-white" style={{ backgroundColor: '#0060FF', height: '44px' }}>
               <BarcodeIcon />
-              <span className="font-semibold" style={{ fontSize: '14px' }}>
-                {'View Ticket'}
-              </span>
+              <span className="font-semibold" style={{ fontSize: '14px' }}>{'View Ticket'}</span>
             </button>
           </div>
         )}
 
-        {/* Links: View Barcode + Ticket Details */}
         {ticket.deliveryMethod === 'wallet' && (
           <div className="px-4 pb-2 flex items-center justify-center gap-10 pt-1">
-            <button
-              className="font-semibold"
-              style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}
-            >
-              View Barcode
-            </button>
-            <button
-              className="font-semibold"
-              style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}
-            >
-              Ticket Details
-            </button>
+            <button className="font-semibold" style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}>View Barcode</button>
+            <button className="font-semibold" style={{ color: '#0060FF', fontSize: '13px', textDecoration: 'underline' }}>Ticket Details</button>
           </div>
         )}
 
-        {/* Ticket Details only (for view / countdown) */}
         {ticket.deliveryMethod !== 'wallet' && (
           <div className="px-4 pb-2 text-center pt-1">
-            <button
-              className="font-semibold"
-              style={{ color: '#0060FF', fontSize: '13px' }}
-            >
-              Ticket Details
-            </button>
+            <button className="font-semibold" style={{ color: '#0060FF', fontSize: '13px' }}>Ticket Details</button>
           </div>
         )}
 
-        {/* Verified badge */}
         {ticket.deliveryMethod === 'wallet' && (
           <div className="px-5 pt-1 pb-4">
-            <div
-              className="rounded-lg flex items-center justify-center gap-2"
-              style={{ backgroundColor: '#0060FF', height: '40px' }}
-            >
+            <div className="rounded-lg flex items-center justify-center gap-2" style={{ backgroundColor: '#0060FF', height: '40px' }}>
               <VerifiedIcon />
-              <span className="text-white font-medium" style={{ fontSize: '13px', fontStyle: 'italic' }}>
-                {'ticketmaster.verified'}
-              </span>
+              <span className="text-white font-medium" style={{ fontSize: '13px', fontStyle: 'italic' }}>{'ticketmaster.verified'}</span>
             </div>
           </div>
         )}
@@ -446,7 +435,16 @@ export default function MyTicketsPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
 
-  const tickets = eventTickets[eventId || '2'] || eventTickets['2'];
+  const eid = eventId || '2';
+
+  // Fetch from Supabase, fall back to hardcoded
+  const { data: dbTickets } = useSWR(
+    `tickets-${eid}`,
+    () => fetchTicketDataForEvent(eid),
+    { refreshInterval: 15000, revalidateOnFocus: true }
+  );
+
+  const tickets = dbTickets || eventTickets[eid] || eventTickets['2'];
   const currentTicket = tickets[0];
 
   const handleScroll = useCallback(() => {
@@ -466,9 +464,11 @@ export default function MyTicketsPage() {
     scrollRef.current?.scrollTo({ left: scrollRef.current.offsetWidth * i, behavior: 'smooth' });
   };
 
+  if (!currentTicket) return null;
+
   return (
     <div className="min-h-screen flex flex-col bg-tm-surface-alt">
-      {/* Header - blue background matching real TM app */}
+      {/* Header */}
       <header className="flex items-center justify-between px-4" style={{ backgroundColor: '#0060FF', paddingTop: '10px', paddingBottom: '10px' }}>
         <button onClick={() => navigate(-1)} className="text-white p-1" aria-label="Close">
           <X size={22} strokeWidth={2.5} />
@@ -525,7 +525,7 @@ export default function MyTicketsPage() {
         {/* Transfer / Sell buttons */}
         <div className="px-4 pb-4 pt-2 flex gap-3">
           <button
-            onClick={() => navigate(`/transfer/${eventId || '2'}`)}
+            onClick={() => navigate(`/transfer/${eid}`)}
             className="flex-1 rounded-lg font-bold text-white"
             style={{ backgroundColor: '#0060FF', fontSize: '14px', height: '46px' }}
           >
