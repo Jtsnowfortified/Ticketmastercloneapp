@@ -2,8 +2,6 @@ import { X } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { supabase } from '@/lib/supabase'
-import { useState, useEffect } from 'react'
-
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
 /* ------------------------------------------------------------------ */
@@ -27,17 +25,11 @@ interface TicketData {
 }
 
 /* ------------------------------------------------------------------ */
-// ====================== REAL DATA FROM SUPABASE (mapped to your exact format) ======================
-const [eventTickets, setEventTickets] = useState<Record<string, TicketData[]>>({
-  '1': [], // All tickets grouped under key '1' to match your current UI
-})
-
-const [loading, setLoading] = useState(true)
+// ====================== REAL DATA FROM SUPABASE ======================
+const [tickets, setTickets] = useState<TicketData[]>([])
 
 useEffect(() => {
   async function fetchTickets() {
-    setLoading(true)
-
     const { data, error } = await supabase
       .from('tickets')
       .select('*')
@@ -48,14 +40,14 @@ useEffect(() => {
     } else {
       const mappedTickets: TicketData[] = (data || []).map((t: any) => ({
         ticketType: t.type || 'Standard Tickets',
-        ticketTypeColor: '#4ADE80',           // Green like your mock
+        ticketTypeColor: '#4ADE80',
         section: t.section || 'N/A',
         row: t.row || 'N/A',
         seat: t.seat || 'N/A',
         title: t.event_name,
         date: t.date,
         venue: t.venue,
-        venueLine2: '',                       // optional
+        venueLine2: '',
         image: t.image_url || 'https://picsum.photos/id/1015/600/400',
         levelLabel: 'Verified Fan Seller',
         deliveryMethod: 'wallet',
@@ -64,9 +56,8 @@ useEffect(() => {
         venueName: t.venue || '',
       }))
 
-      setEventTickets({ '1': mappedTickets })
+      setTickets(mappedTickets)
     }
-    setLoading(false)
   }
 
   fetchTickets()
@@ -304,9 +295,7 @@ export default function MyTicketsPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
 
-  const tickets = eventTickets[eventId || '2'] || eventTickets['2'];
-  const currentTicket = tickets[0];
-
+  const currentTicket = tickets[0] || {} as TicketData;
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
