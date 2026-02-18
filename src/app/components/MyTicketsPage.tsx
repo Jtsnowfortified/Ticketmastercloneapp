@@ -299,10 +299,51 @@ function TicketCard({ ticket }: { ticket: TicketData }) {
 export default function MyTicketsPage() {
   const navigate = useNavigate();
   const { eventId } = useParams();
-  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTicketIndex, setActiveTicketIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch real tickets from Supabase
+  useEffect(() => {
+    async function fetchTickets() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase error:', error);
+      } else {
+        const mappedTickets: TicketData[] = (data || []).map((t: any) => ({
+          ticketType: t.type || 'Standard Tickets',
+          ticketTypeColor: '#4ADE80',
+          section: t.section || 'N/A',
+          row: t.row || 'N/A',
+          seat: t.seat || 'N/A',
+          title: t.event_name,
+          date: t.date,
+          venue: t.venue,
+          venueLine2: '',
+          image: t.image_url || 'https://picsum.photos/id/1015/600/400',
+          levelLabel: 'Verified Fan Seller',
+          deliveryMethod: 'wallet',
+          sellActive: false,
+          mapQuery: t.venue ? t.venue.replace(/ /g, '+') : '',
+          venueName: t.venue || '',
+        }));
+        setTickets(mappedTickets);
+      }
+      setLoading(false);
+    }
+
+    fetchTickets();
+  }, []);
 
   const currentTicket = tickets[0] || ({} as TicketData);
+
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const idx = Math.round(scrollRef.current.scrollLeft / scrollRef.current.offsetWidth);
@@ -320,18 +361,21 @@ export default function MyTicketsPage() {
     scrollRef.current?.scrollTo({ left: scrollRef.current.offsetWidth * i, behavior: 'smooth' });
   };
 
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading tickets...</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-tm-surface-alt">
-      {/* Header - blue background matching real TM app */}
+      {/* Header */}
       <header className="flex items-center justify-between px-4" style={{ backgroundColor: '#0060FF', paddingTop: '10px', paddingBottom: '10px' }}>
-        <button onClick={() => navigate(-1)} className="text-white p-1" aria-label="Close">
+        <button onClick={() => navigate(-1)} className="text-white p-1">
           <X size={22} strokeWidth={2.5} />
         </button>
         <h1 className="text-white font-bold" style={{ fontSize: '16px' }}>My Tickets</h1>
         <button className="text-white font-medium" style={{ fontSize: '15px' }}>Help</button>
       </header>
 
-      {/* Main scrollable */}
       <div className="flex-1 overflow-y-auto bg-tm-bg">
         <div className="pt-4 pb-2">
           {/* Ticket Carousel */}
@@ -360,18 +404,8 @@ export default function MyTicketsPage() {
                     height: '7px',
                     backgroundColor: i === activeTicketIndex ? '#0060FF' : '#C4C4C4',
                   }}
-                  aria-label={`Go to ticket ${i + 1}`}
                 />
               ))}
-            </div>
-          )}
-
-          {/* "How Do I Manage My Tickets?" link (for countdown) */}
-          {currentTicket.deliveryMethod === 'countdown' && (
-            <div className="text-center mt-3 mb-1">
-              <button className="font-semibold" style={{ color: '#0060FF', fontSize: '13px' }}>
-                {'How Do I Manage My Tickets?'}
-              </button>
             </div>
           )}
         </div>
@@ -379,7 +413,7 @@ export default function MyTicketsPage() {
         {/* Transfer / Sell buttons */}
         <div className="px-4 pb-4 pt-2 flex gap-3">
           <button
-            onClick={() => navigate(`/transfer/${eventId || '2'}`)}
+            onClick={() => navigate(`/transfer/${eventId || '1'}`)}
             className="flex-1 rounded-lg font-bold text-white"
             style={{ backgroundColor: '#0060FF', fontSize: '14px', height: '46px' }}
           >
@@ -398,7 +432,7 @@ export default function MyTicketsPage() {
           </button>
         </div>
 
-        {/* Static Map Preview */}
+        {/* Map */}
         <div className="px-0 pb-6">
           <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
             <iframe
