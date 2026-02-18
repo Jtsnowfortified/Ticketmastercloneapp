@@ -1,6 +1,8 @@
 import { X } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react'
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -25,194 +27,50 @@ interface TicketData {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Mock ticket data matching the real TM screenshots exactly          */
-/* ------------------------------------------------------------------ */
-const eventTickets: Record<string, TicketData[]> = {
-  '1': [
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: 'D',
-      row: '7',
-      seat: '1',
-      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025 7:00 PM',
-      venue: 'Hollywood Bowl',
-      venueLine2: 'Hollywood, CA',
-      image:
-        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Verified Fan Seller',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
-      venueName: 'Hollywood Bowl',
-    },
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: 'D',
-      row: '7',
-      seat: '2',
-      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025 7:00 PM',
-      venue: 'Hollywood Bowl',
-      venueLine2: 'Hollywood, CA',
-      image:
-        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Verified Fan Seller',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
-      venueName: 'Hollywood Bowl',
-    },
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: 'D',
-      row: '7',
-      seat: '3',
-      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025 7:00 PM',
-      venue: 'Hollywood Bowl',
-      venueLine2: 'Hollywood, CA',
-      image:
-        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Verified Fan Seller',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
-      venueName: 'Hollywood Bowl',
-    },
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: 'D',
-      row: '7',
-      seat: '4',
-      title: 'Junior H - $AD BOYZ LIVE & BROKEN TOUR',
-      date: 'Sat, Nov 8, 2025 7:00 PM',
-      venue: 'Hollywood Bowl',
-      venueLine2: 'Hollywood, CA',
-      image:
-        'https://images.unsplash.com/photo-1606075809824-eba8beb2c37a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcmlhbmElMjBncmFuZGUlMjBjb25jZXJ0JTIwc3RhZ2UlMjBwZXJmb3JtYW5jZXxlbnwxfHx8fDE3NzExNTgzNTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Verified Fan Seller',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Hollywood+Bowl+Hollywood+CA',
-      venueName: 'Hollywood Bowl',
-    },
-  ],
-  '2': [
-    {
-      ticketType: 'Verified Resale Ticket',
-      ticketTypeColor: '#FFFFFF',
-      section: '114',
-      row: '25',
-      seat: '1',
-      title: 'Chris brown: Breezy Bowl XX',
-      date: 'Wed, sep 24, 2025, 7:00 PM',
-      venue: 'Coors field',
-      image:
-        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Lower level',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Coors+Field+Denver+CO',
-      venueName: 'Coors Field',
-    },
-    {
-      ticketType: 'Verified Resale Ticket',
-      ticketTypeColor: '#FFFFFF',
-      section: '114',
-      row: '25',
-      seat: '3',
-      title: 'Chris brown: Breezy Bowl XX',
-      date: 'Wed, sep 24, 2025, 7:00 PM',
-      venue: 'Coors field',
-      image:
-        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Lower level',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Coors+Field+Denver+CO',
-      venueName: 'Coors Field',
-    },
-    {
-      ticketType: 'Verified Resale Ticket',
-      ticketTypeColor: '#FFFFFF',
-      section: '114',
-      row: '25',
-      seat: '5',
-      title: 'Chris brown: Breezy Bowl XX',
-      date: 'Wed, sep 24, 2025, 7:00 PM',
-      venue: 'Coors field',
-      image:
-        'https://images.unsplash.com/photo-1747656336064-c2ca5e98b451?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYWxlJTIwc2luZ2VyJTIweWVsbG93JTIwb3V0Zml0JTIwcGVyZm9ybWluZ3xlbnwxfHx8fDE3NzExNTgzNjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      levelLabel: 'Lower level',
-      deliveryMethod: 'wallet',
-      sellActive: false,
-      mapQuery: 'Coors+Field+Denver+CO',
-      venueName: 'Coors Field',
-    },
-  ],
-  '3': [
-    {
-      ticketType: 'General Sale',
-      ticketTypeColor: '#FFFFFF',
-      section: '248',
-      row: '11',
-      seat: '18',
-      title: 'Lady Gaga: The MAYHEM Ball',
-      date: 'Thu, Sep 11, 2025, 8:00 PM',
-      venue: 'Scotiabank Arena',
-      image:
-        'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
-      levelLabel: '',
-      deliveryMethod: 'countdown',
-      countdownTarget: new Date(Date.now() + 39 * 86400000 + 13 * 3600000).toISOString(),
-      sellActive: false,
-      mapQuery: 'Scotiabank+Arena+Toronto',
-      venueName: 'Scotiabank Arena',
-    },
-  ],
-  '4': [
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: '221',
-      row: '13',
-      seat: '21',
-      title: 'Harry Styles: Together, Together.',
-      date: 'Sat, Sep 05, 2026, 8:00 PM',
-      venue: 'Madison Square Garden',
-      image:
-        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
-      levelLabel: 'Mobile',
-      deliveryMethod: 'view',
-      sellActive: true,
-      mapQuery: 'Madison+Square+Garden+New+York',
-      venueName: 'Madison Square Garden',
-    },
-    {
-      ticketType: 'Artist Presale',
-      ticketTypeColor: '#4ADE80',
-      section: '221',
-      row: '13',
-      seat: '22',
-      title: 'Harry Styles: Together, Together.',
-      date: 'Sat, Sep 05, 2026, 8:00 PM',
-      venue: 'Madison Square Garden',
-      image:
-        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080&q=80',
-      levelLabel: 'Mobile',
-      deliveryMethod: 'view',
-      sellActive: true,
-      mapQuery: 'Madison+Square+Garden+New+York',
-      venueName: 'Madison Square Garden',
-    },
-  ],
-};
+// ====================== REAL DATA FROM SUPABASE (mapped to your exact format) ======================
+const [eventTickets, setEventTickets] = useState<Record<string, TicketData[]>>({
+  '1': [], // All tickets grouped under key '1' to match your current UI
+})
 
+const [loading, setLoading] = useState(true)
+
+useEffect(() => {
+  async function fetchTickets() {
+    setLoading(true)
+
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Supabase error:', error)
+    } else {
+      const mappedTickets: TicketData[] = (data || []).map((t: any) => ({
+        ticketType: t.type || 'Standard Tickets',
+        ticketTypeColor: '#4ADE80',           // Green like your mock
+        section: t.section || 'N/A',
+        row: t.row || 'N/A',
+        seat: t.seat || 'N/A',
+        title: t.event_name,
+        date: t.date,
+        venue: t.venue,
+        venueLine2: '',                       // optional
+        image: t.image_url || 'https://picsum.photos/id/1015/600/400',
+        levelLabel: 'Verified Fan Seller',
+        deliveryMethod: 'wallet',
+        sellActive: false,
+        mapQuery: t.venue ? t.venue.replace(/ /g, '+') : '',
+        venueName: t.venue || '',
+      }))
+
+      setEventTickets({ '1': mappedTickets })
+    }
+    setLoading(false)
+  }
+
+  fetchTickets()
+}, [])
 /* ------------------------------------------------------------------ */
 /*  Countdown Timer                                                    */
 /* ------------------------------------------------------------------ */
