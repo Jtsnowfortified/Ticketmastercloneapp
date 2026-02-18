@@ -25,50 +25,9 @@ interface TicketData {
 }
 
 /* ------------------------------------------------------------------ */
-//// ====================== REAL DATA FROM SUPABASE ======================
-const [tickets, setTickets] = useState<TicketData[]>([])
-const [loading, setLoading] = useState(true)
-
-useEffect(() => {
-  async function fetchTickets() {
-    setLoading(true)
-    console.log('🔄 Fetching tickets from Supabase...')   // ← Debug log
-
-    const { data, error } = await supabase
-      .from('tickets')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Supabase error:', error)
-    } else {
-      console.log('✅ Tickets loaded from Supabase:', data)   // ← Debug log
-
-      const mappedTickets: TicketData[] = (data || []).map((t: any) => ({
-        ticketType: t.type || 'Standard Tickets',
-        ticketTypeColor: '#4ADE80',
-        section: t.section || 'N/A',
-        row: t.row || 'N/A',
-        seat: t.seat || 'N/A',
-        title: t.event_name,
-        date: t.date,
-        venue: t.venue,
-        venueLine2: '',
-        image: t.image_url || 'https://picsum.photos/id/1015/600/400',
-        levelLabel: 'Verified Fan Seller',
-        deliveryMethod: 'wallet',
-        sellActive: false,
-        mapQuery: t.venue ? t.venue.replace(/ /g, '+') : '',
-        venueName: t.venue || '',
-      }))
-
-      setTickets(mappedTickets)
-    }
-    setLoading(false)
-  }
-
-  fetchTickets()
-}, [])
+/* (hook usage for fetching tickets moved inside the component to avoid
+   calling React hooks at the top-level. See the component implementation
+   below for the correct usage.) */
 /* ------------------------------------------------------------------ */
 /*  Countdown Timer                                                    */
 /* ------------------------------------------------------------------ */
